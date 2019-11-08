@@ -1,4 +1,4 @@
-SLAM - Simultaneous localization and mapping
+# SLAM - Simultaneous localization and mapping
 
 ## Introduction 
 

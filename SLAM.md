@@ -52,11 +52,11 @@ Unit A 的内容是对一个乐高小车的运动进行建模，首先利用乐�
 
 $$ 
 \begin{align}
-& r = \alpha \cdot (R + w) \\\\
-& l = \alpha \cdot R \\\\
-& r - l = \alpha \cdot w  \\\\
-& \alpha = (r-l)/w \\\\
-& R = l/\alpha 
+& r = \alpha \cdot (R + w) \\\\ \nonumber
+& l = \alpha \cdot R \\\\	\nonumber
+& r - l = \alpha \cdot w  \\\\ \nonumber
+& \alpha = (r-l)/w \\\\ \nonumber
+& R = l/\alpha \nonumber
 \end{align}
 \tag{1.1}
 $$

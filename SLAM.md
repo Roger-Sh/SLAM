@@ -19,9 +19,8 @@ Unit A 的内容是对一个乐高小车的运动进行建模，首先利用乐�
 
 ### 1. Lego Car and Landmark
 
-*Fig A-1 Lego Car:*
-
-<center><img src="https://i.imgur.com/0uQWKGA.png" width="600px" /></center>
+<div align=center><img src="https://i.imgur.com/0uQWKGA.png" width="600px" /> </div>
+<center> Fig A-1 Lego Car </center>
 
 *Fig A-2 Arena and Landmark:*
 

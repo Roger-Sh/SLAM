@@ -19,21 +19,45 @@ Unit A 的内容是对一个乐高小车的运动进行建模，首先利用乐�
 
 ### 1. Lego Car and Landmark
 
-Fig A-1 Lego Car:
+*Fig A-1 Lego Car:*
 
-<img src="https://i.imgur.com/0uQWKGA.png" width="500px" />
+<center><img src="https://i.imgur.com/0uQWKGA.png" width="600px" /></center>
 
-Fig A-2 Arena and Landmark:
+*Fig A-2 Arena and Landmark:*
 
-<img src="https://i.imgur.com/DBH8449.png" width="500px" />
+<center><img src="https://i.imgur.com/DBH8449.png" width="600px" /></center>
 
 
 ### 2. Motor Control 
 
 下图展示了乐高小车的运动模型，由两个电机带动左右履带，履带的位移差距可以让小车进行转向。
 
-Fig A-3 Motion:
+*Fig A-3 Motion:*
 
-<img src="https://i.imgur.com/YErhk8h.png" width="500px" />
+<center><img src="https://i.imgur.com/YErhk8h.png" width="600px" /></center>
 
-小车的编码器可以实时显示出
+小车的编码器可以表示电机的角度，经过换算，1 tick 约为 0,349 mm 履带前进的距离。下图表示了一个电机的log-file中的内容。
+
+*Fig A-4 Motor log file:*
+
+<center><img src="https://i.imgur.com/lMD8jBt.png" width="600px" /></center>
+
+其中，第0列 'M' 表示Motor, 第1列表示时间戳 (time stamp), 第2列表示左轮Motor的编码， 第6列表示右轮Motor的编码，第10列表示第三个motor的编码，这里我们只需要左轮和右轮的motor即可。slam\_01\_a， slam\_01\_b，slam\_01\_c 这三个程序展示了如何通过lego\_robot 这个class来读取robot4\_motors.txt 。
+
+下一步是建立小车转弯时的运动模型。
+
+*Fig A-5 Motion Model:*
+
+<center><img src="https://i.imgur.com/p6utG7D.png" width="600px" /></center>
+
+$$ 
+\begin{align}
+& r = \alpha \cdot (R + w) \\\\
+& l = \alpha \cdot R \\\\
+& r - l = \alpha \cdot w  \\\\
+& \alpha = (r-l)/w \\\\
+& R = l/\alpha 
+\end{align}
+\tag{1.1}
+$$
+

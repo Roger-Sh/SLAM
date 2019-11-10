@@ -65,8 +65,8 @@ if __name__ == '__main__':
     ticks_to_mm = 0.349
 
     # Measured width of the robot (wheel gauge), in mm.
+    #robot_width = 150.0
     robot_width = 171.0
-
     # Measured start position.
     pose = (1850.0, 1897.0, 213.0 / 180.0 * pi)
 

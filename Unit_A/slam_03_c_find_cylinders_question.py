@@ -42,16 +42,16 @@ def find_cylinders(scan, scan_derivative, jump, min_dist):
             
         elif scan_derivative[i] > jump and on_cylinder == True:
             on_cylinder = False
-            
             average_ray = sum_ray / rays
             average_depth = sum_depth / rays
             cylinder_list.append( (average_ray, average_depth) )
-            
+
         elif on_cylinder == True and scan[i] > min_dist:
             rays += 1
             sum_ray += i
             sum_depth += scan[i]
         
+
         
     return cylinder_list
 

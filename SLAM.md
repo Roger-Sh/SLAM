@@ -2,10 +2,9 @@
 
 ## Introduction 
 
-这份笔记是针对汉诺威大学Claus Brenner教授的课程SLAM 整理而来，笔记内的某些专业词汇可能是德语，该笔记仅供个人学习使用。
-该课程分为以下几个模块，课程所需的编程环境为python2.7. 在github页面正确显示公式需要安装一个插件: 
+这份笔记是针对汉诺威大学Claus Brenner教授的课程SLAM 整理而来，笔记内的某些专业词汇可能是德语，该笔记仅供个人学习使用。课程所需的编程环境为python2.7. 在github页面正确显示公式需要安装一个插件: 
 [MathJax Plugin for Github](https://chrome.google.com/webstore/detail/mathjax-plugin-for-github/ioemnmodlmafdkllaclgeombjnmnbima),
-教程视频： [SLAM Lectures](https://www.youtube.com/playlist?list=PLpUPoM7Rgzi_7YWn14Va2FODh7LzADBSm)，Repo：[SLAM](https://github.com/ipa-fog-ws/SLAM)
+教程视频： [SLAM Lectures](https://www.youtube.com/playlist?list=PLpUPoM7Rgzi_7YWn14Va2FODh7LzADBSm)，Repo：[SLAM](https://github.com/ipa-fog-ws/SLAM)，该课程分为以下几个模块：
 
 - Unit A: Roboter, Sensor, Arena,Landmark, Motion Model, 
 - Unit B: LS-Square, correkt the trajektory, Iterative-Closest-Point

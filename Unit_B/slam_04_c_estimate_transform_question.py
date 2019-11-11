@@ -59,11 +59,51 @@ def estimate_transform(left_list, right_list, fix_scale = False):
     # Compute left and right center.
     lc = compute_center(left_list)
     rc = compute_center(right_list)
-
+#    print lc, rc
     # --->>> Insert here your code to compute lambda, c, s and tx, ty.
+    # Compute the new left and right list
+    left_new = []
+    right_new = []
+#    print len(left_list), len(right_list)
+    for i in range(len(left_list)):
+        left_new.append([left_list[i][0]-lc[0], left_list[i][1]-lc[1]])
+        right_new.append([right_list[i][0]-rc[0], right_list[i][1]-rc[1]])
+#        print left_list[i], right_list[i], left_new[i], right_new[i]
+    
+    # Compute sum of cos, sin, length of vector r, l 
+    cs = 0.0
+    ss = 0.0
+    rr = 0.0
+    ll = 0.0
+    
+    for i in range(len(left_list)):
+        cs += right_new[i][0]*left_new[i][0] + right_new[i][1]*left_new[i][1]
+        ss += -right_new[i][0]*left_new[i][1] + right_new[i][1]*left_new[i][0]
+        rr += right_new[i][0]*right_new[i][0] + right_new[i][1]*right_new[i][1]
+        ll += left_new[i][0]*left_new[i][0] + left_new[i][1]*left_new[i][1]
     
     
-
+    if rr == 0 and ll == 0:     # 4 parameter need 4 observation 
+        return None
+    
+    # Compute the lambda, scala variable
+    if fix_scale == False:
+        la = sqrt(rr/ll)
+    elif fix_scale == True:
+        la = 1.0
+    
+    # Compute the rotation angle in cos and sin term
+    if abs(sqrt(pow(cs,2) + pow(ss,2)) - 0.0) !=  0:
+        c = cs / sqrt(pow(cs,2) + pow(ss,2))
+        s = ss / sqrt(pow(cs,2) + pow(ss,2))
+    else:
+        return None
+    
+    
+    # compute the tranlation
+    tx = rc[0] - la*(c*lc[0] - s*lc[1])
+    ty = rc[1] - la*(s*lc[0] + c*lc[1])
+    
     return la, c, s, tx, ty
 
 # Given a similarity transformation:

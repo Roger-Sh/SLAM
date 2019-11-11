@@ -20,6 +20,21 @@ def find_cylinder_pairs(cylinders, reference_cylinders, max_radius):
 
     # --->>> Insert here your code from the last question,
     # slam_04_b_find_cylinder_pairs.
+    for index1 in range(len(cylinders)):
+        radius_old = max_radius
+        
+        for index2 in range(len(reference_cylinders)):
+            radius_new = sqrt(
+                    pow((cylinders[index1][0]-reference_cylinders[index2][0]),2)+
+                    pow((cylinders[index1][1]-reference_cylinders[index2][1]),2))
+            
+            if radius_new < max_radius and radius_new < radius_old:
+                radius_old = radius_new
+                i = index1
+                j = index2
+    
+        if radius_old < max_radius:
+            cylinder_pairs.append((i,j))
 
     return cylinder_pairs
 
@@ -46,6 +61,8 @@ def estimate_transform(left_list, right_list, fix_scale = False):
     rc = compute_center(right_list)
 
     # --->>> Insert here your code to compute lambda, c, s and tx, ty.
+    
+    
 
     return la, c, s, tx, ty
 

@@ -113,7 +113,7 @@ $$
 下一步是将匹配好的点经过旋转位移等操作进行配准。对点云进行配准需要相似变换：
 
 $$
-\lambda \vec{R} \vec{l}\_i + \vec{t} = \vec{r}\_i
+\lambda \vec{R} \vec{l}\_i + \vec{t} = \vec{r}\_i \tag{2.1}
 $$
 
 其中需要确认以下四个变量：
@@ -122,14 +122,15 @@ $$
 \begin{aligned}
 \lambda&: scale \in \mathbb{R} \\\\
 \vec{R}&: \begin{bmatrix} \cos{\alpha} & -\sin{\alpha} \\\\ \sin{\alpha} & \cos{\alpha} \end{bmatrix} \in \mathbb{R}^{2x2}, \alpha \in \begin{bmatrix} 0&2 \pi \end{bmatrix} \\\\
-\vec{t}&: \begin{bmatrix} t\_x & t\_y \end{bmatrix} \\\\
+\vec{t}&: \begin{bmatrix} t\_x & t\_y \end{bmatrix} 
 \end{aligned}
+\tag{2.2}
 $$
 
 由于存在噪声误差，上述变换公式中，等式左边并不完全等于等式右边，我们需要用到最小二乘法来优化该问题。但由于旋转矩阵和scale变量的存在，该优化问题为非线性问题：
 
 $$
-\sum_i = || \lambda \vec{R} \vec{l}\_i + \vec{t} - \vec{r}\_i ||^2 
+\sum_i = || \lambda \vec{R} \vec{l}\_i + \vec{t} - \vec{r}\_i ||^2 \tag{2.3}
 $$
 
 所以接下来我们先计算两个点云的中心，通过每个点减去点云中心，得到基于点云中心的每个点的坐标：
@@ -141,12 +142,13 @@ $$
 \vec{l}\_i' &= \vec{l}\_i - \vec{l}\_m \\\\
 \vec{r}\_i' &= \vec{r}\_i - \vec{r}\_m 
 \end{aligned}
+\tag{2.4}
 $$
 
 并且满足：
 
 $$
-\sum\_i \vec{l}\_i' = 0
+\sum\_i \vec{l}\_i' = 0 \tag{2.5}
 $$
 
 <div align=center><img src="https://i.imgur.com/osnykQi.png" width="250px" /> </div>
@@ -160,6 +162,7 @@ $$
 &= \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i' + \lambda \vec{R} \vec{l}\_m - \vec{r}\_m + \vec{t} \\\\
 &= \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i' + \vec{t}' 
 \end{aligned}
+\tag{2.6}
 $$
 
 接下来我们要对上述模型进行优化，利用最小二乘法可得：
@@ -170,6 +173,7 @@ $$
 = &\sum\_i || \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i' ||^2 + 2{\vec{t}'}^{\rm{T}} \sum\_i(\lambda \vec{R} \vec{l}\_i' - \vec{r}\_i') + \sum\_i ||\vec{t}' ||^2 \\\\
 = &\sum\_i || \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i' ||^2 + m ||\vec{t}'||^2 \longrightarrow min
 \end{aligned}
+\tag{2.7}
 $$
 
 为了使上式达到最小值，首先第一项要达到最小，其次第二项可以达到零:
@@ -180,6 +184,7 @@ $$
 \lambda \vec{R} \vec{l}\_m - \vec{r}\_m + \vec{t} &= 0 \\\\
  \vec{t} &= \vec{r}\_m - \lambda \vec{R} \vec{l}\_m \\\\
 \end{aligned}
+\tag{2.8}
 $$
 
 通过分析上式可知，只需确认\\(\lambda\\) 和\\(\vec{R}\\) 即可使上式为零。接着我们分析第一项，通过对第一项等效变换可得：
@@ -194,6 +199,7 @@ $$
 \Longrightarrow& \lambda^2 = \frac{\sum\_i ||\vec{r}\_i'||^2}{\sum\_i||\vec{l}\_i'||^2} \\\\
 \Longrightarrow& \lambda = \sqrt{\frac{\sum\_i ||\vec{r}\_i'||^2}{\sum\_i||\vec{l}\_i'||^2}}
 \end{aligned} 
+\tag{2.9}
 $$
 
 要使得上式达到最小，我们还需要使b项达到最大：
@@ -201,11 +207,66 @@ $$
 $$
 \begin{aligned}
 & \sum\_i {\vec{r}\_i'}^{\rm{T}} \vec{R} \vec{l}\_i' \longrightarrow max \\\\
-=& \begin{bmatrix} r\_x & r\_y \end{bmatrix} \begin{bmatrix} \cos{\alpha} & -\sin{\alpha} \\\\ \sin{\alpha} & \cos{\alpha} \end{bmatrix} \begin{bmatrix} l\_x \\\\ l\_y \end{bmatrix} \\\\
-=& \begin{bmatrix} r\_x & r\_y \end{bmatrix} \begin{bmatrix} l\_x \cos{\alpha} & -l\_y & \sin{\alpha} \\\\ l\_x \sin{\alpha} & +l\_y & \cos{\alpha} \end{bmatrix} \\\\
-=& r\_x l\_x \cos{\alpha} - r\_x l\_y \sin{\alpha} + r\_y l\_x \sin{\alpha} + r\_y l\_y \cos{\alpha} \\\\
-=& \cos{\alpha} (r\_xl\_x + r\_yl\_y) + \sin{\alpha}(-r\_xl\_y + r\_yl\_x)
+ = & \begin{bmatrix} r'\_x & r'\_y \end{bmatrix} \begin{bmatrix} \cos{\alpha} & -\sin{\alpha} \\\\ \sin{\alpha} & \cos{\alpha} \end{bmatrix} \begin{bmatrix} l'\_x \\\\ l'\_y \end{bmatrix} \\\\
+ = & \begin{bmatrix} r'\_x & r'\_y \end{bmatrix} \begin{bmatrix} l'\_x \cos{\alpha} & -l'\_y & \sin{\alpha} \\\\ l'\_x \sin{\alpha} & +l'\_y & \cos{\alpha} \end{bmatrix} \\\\
+ = & r'\_x l'\_x \cos{\alpha} - r'\_x l'\_y \sin{\alpha} + r'\_y l'\_x \sin{\alpha} + r'\_y l'\_y \cos{\alpha} \\\\
+ = & \cos{\alpha} \sum\_i(r'\_xl'\_x + r'\_yl'\_y) + \sin{\alpha}\sum\_i(-r'\_xl'\_y + r'\_yl'\_x) \longrightarrow max \\\\
+ = & \begin{bmatrix} \cos{\alpha} & \sin{\alpha} \end{bmatrix} \begin{bmatrix} \sum\_i(r'\_xl'\_x + r'\_yl'\_y) \\\\ \sum\_i(-r'\_xl'\_y + r'\_yl'\_x) \end{bmatrix} \longrightarrow max
 \end{aligned}
+\tag{2.10}
 $$
+
+上列式子由两个向量相乘，可以判断出，当两个向量具有相同方向时，其乘积达到最大，如下图所示：
+
+<div align=center><img src="https://i.imgur.com/a9yx72T.png" width="300px" /> </div>
+<div align=center> Fig B-4 向量乘积</div>
+
+所以当满足以下条件时达到最大：
+
+$$
+\begin{bmatrix} \cos{\alpha} \\\\ \sin{\alpha}  \end{bmatrix} = \frac{1}{|| \begin{bmatrix} \sum\_i(r'\_xl'\_x + r'\_yl'\_y) \\\\ \sum\_i(-r'\_xl'\_y + r'\_yl'\_x) \end{bmatrix} ||} \begin{bmatrix} \sum\_i(r'\_xl'\_x + r'\_yl'\_y) \\\\ \sum\_i(-r'\_xl'\_y + r'\_yl'\_x) \end{bmatrix}\tag{2.11}
+$$
+
+接下来整理以下编程的思路：
+
+Given:
+$$
+ \vec{l}\_i, \vec{r}\_i, 1 \leq i \leq m \tag{2.12}
+$$
+
+Compute:
+$$
+\begin{aligned}
+&\vec{l}\_m = \frac{1}{m}\sum\_i\vec{l}\_i,\quad \vec{r}\_m = \frac{1}{m}\sum\_i\vec{r}\_i \\\\
+&\vec{l}\_i' = \vec{l}\_i - \vec{l}\_m,\quad \vec{r}\_i' = \vec{r}\_i - \vec{r}\_m \\\\
+\\\\
+&cs, ss, rr, ll = 0.0 \\\\
+&for \quad i\quad in\quad 1\quad \cdots m: \\\\
+&\qquad sum\ of\ cos: cs += r\_x'l\_x' + r\_y'l\_y' \\\\
+&\qquad sum\ of\ sins: ss  += -r\_x'l\_y' + r\_y'l\_x' \\\\
+&\qquad length\ of\ vectors: rr += r\_x'r\_x' + r\_y'r\_y' \\\\
+&\qquad length\ of\ vectors: ll += l\_x'l\_x' + l\_y'l\_y' \\\\
+\\\\
+&\lambda = \sqrt{\frac{rr}{ll}} \\\\
+&\begin{bmatrix}\cos{\alpha} \\\\ \sin{\alpha} \end{bmatrix} = \frac{\begin{bmatrix} cs\\\\ ss \end{bmatrix}}{\sqrt{cs^2 + ss^2}} \\\\
+& \begin{bmatrix} t\_x \\\\ t\_y \end{bmatrix} = \vec{r}\_m - \lambda\vec{R}\vec{l}\_m = \begin{bmatrix} r\_{m,x} \\\\ r\_{m,y} \end{bmatrix} - \lambda \begin{bmatrix} \cos{\alpha} & -\sin{\alpha} \\\\ \sin{\alpha} & \cos{\alpha} \end{bmatrix} \begin{bmatrix} l\_{m,x} \\\\ l\_{m,y} \end{bmatrix} \\\\
+\\\\
+&return (\lambda, \cos{\alpha}, \sin{\alpha}, t\_x, t\_y)
+\end{aligned}
+\tag{2.13}
+$$
+
+通过把\\(\lambda\\) 设置为1，上述式子还能从相似变换（similar transformation）转换为 僵硬变换 (rigid transformation) 。
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -6,7 +6,7 @@
 from lego_robot import *
 from slam_b_library import filter_step, compute_scanner_cylinders,\
     write_cylinders
-import numpy as np
+from math import sqrt
 
 # Given a list of cylinders (points) and reference_cylinders:
 # For every cylinder, find the closest reference_cylinder and add
@@ -38,7 +38,6 @@ def find_cylinder_pairs(cylinders, reference_cylinders, max_radius):
         if radius_old < max_radius:
             cylinder_pairs.append((i,j))
         
-    print cylinder_pairs
     return cylinder_pairs
 
 if __name__ == '__main__':

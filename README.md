@@ -14,7 +14,7 @@
 - Unit F: Mapping, Extended-Kalmann-Filter SLAM
 - Unit G: Particle Filter SLAM 
 
-## Unit A 
+## Unit A
 
 Unit A 的内容是对一个乐高小车的运动进行建模，首先利用乐高小车的电机编码器返回的数据计算出小车的运动轨迹，其次利用乐高小车搭载的LiDAR传感器获得周围环境的深度信息，检测出Landmark所在的位置。
 
@@ -97,3 +97,115 @@ $$
 
 <div align=center><img src="https://i.imgur.com/usofPRd.png" width="400px" /> </div>
 <div align=center> Fig A-13 Landmark 相对于LiDAR的笛卡尔坐标</div>
+
+### Unit B
+
+在转弯的时候，Landmark的估计结果有较大误差，通过比较估计的Landmark和实际的Landmark的差距，我们可以矫正对应的小车位置。
+
+<div align=center><img src="https://i.imgur.com/5KQvCNR.png" width="300px" /> </div>
+<div align=center> Fig B-1 Landmark 估计与实际位置的差距</div>
+
+首先通过 slam\_04\_a 可以将Landmark相对于地图的笛卡尔坐标计算出来，结果与上图通过 logfile\_viewer 类似。 我们要把探测到的Landmark与实际存在的最近的Landmark进行匹配。程序 slam\_04\_b 实现了这样的效果。 
+
+<div align=center><img src="https://i.imgur.com/1zeFH7m.png" width="400px" /> </div>
+<div align=center> Fig B-2 Landmark 估计位置与实际位置进行配准</div>
+
+下一步是将匹配好的点经过旋转位移等操作进行配准。对点云进行配准需要相似变换：
+
+$$
+\lambda \vec{R} \vec{l}\_i + \vec{t} = \vec{r}\_i
+$$
+
+其中需要确认以下四个变量：
+
+$$
+\begin{aligned}
+\lambda&: scale \in \mathbb{R} \\\\
+\vec{R}&: \begin{bmatrix} \cos{\alpha} & -\sin{\alpha} \\\\ \sin{\alpha} & \cos{\alpha} \end{bmatrix} \in \mathbb{R}^{2x2}, \alpha \in \begin{bmatrix} 0&2 \pi \end{bmatrix} \\\\
+\vec{t}&: \begin{bmatrix} t\_x & t\_y \end{bmatrix} \\\\
+\end{aligned}
+$$
+
+由于存在噪声误差，上述变换公式中，等式左边并不完全等于等式右边，我们需要用到最小二乘法来优化该问题。但由于旋转矩阵和scale变量的存在，该优化问题为非线性问题：
+
+$$
+\sum_i = || \lambda \vec{R} \vec{l}\_i + \vec{t} - \vec{r}\_i ||^2 
+$$
+
+所以接下来我们先计算两个点云的中心，通过每个点减去点云中心，得到基于点云中心的每个点的坐标：
+
+$$
+\begin{aligned}
+\vec{l}\_m &= \frac{1}{m} \sum\_i \vec{l}\_i \\\\
+\vec{r}\_m &= \frac{1}{m} \sum\_i \vec{r}\_i \\\\
+\vec{l}\_i' &= \vec{l}\_i - \vec{l}\_m \\\\
+\vec{r}\_i' &= \vec{r}\_i - \vec{r}\_m 
+\end{aligned}
+$$
+
+并且满足：
+
+$$
+\sum\_i \vec{l}\_i' = 0
+$$
+
+<div align=center><img src="https://i.imgur.com/osnykQi.png" width="250px" /> </div>
+<div align=center> Fig B-3 点云基于中心点的坐标向量</div>
+
+由此可得：
+
+$$
+\begin{aligned}
+\lambda \vec{R} \vec{l}\_i - \vec{r}\_i + \vec{t} &= \lambda \vec{R} (\vec{l}\_i' + \vec{l}\_m) - (\vec{r}\_i' + \vec{r}\_m) + \vec{t} \\\\
+&= \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i' + \lambda \vec{R} \vec{l}\_m - \vec{r}\_m + \vec{t} \\\\
+&= \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i' + \vec{t}' 
+\end{aligned}
+$$
+
+接下来我们要对上述模型进行优化，利用最小二乘法可得：
+
+$$
+\begin{aligned}
+& \sum\_i || \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i' + \vec{t}' ||^2 \\\\
+= &\sum\_i || \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i' ||^2 + 2{\vec{t}'}^{\rm{T}} \sum\_i(\lambda \vec{R} \vec{l}\_i' - \vec{r}\_i') + \sum\_i ||\vec{t}' ||^2 \\\\
+= &\sum\_i || \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i' ||^2 + m ||\vec{t}'||^2 \longrightarrow min
+\end{aligned}
+$$
+
+为了使上式达到最小值，首先第一项要达到最小，其次第二项可以达到零:
+
+$$
+\begin{aligned}
+\vec{t}' &= 0 \\\\
+\lambda \vec{R} \vec{l}\_m - \vec{r}\_m + \vec{t} &= 0 \\\\
+ \vec{t} &= \vec{r}\_m - \lambda \vec{R} \vec{l}\_m \\\\
+\end{aligned}
+$$
+
+通过分析上式可知，只需确认\\(\lambda\\) 和\\(\vec{R}\\) 即可使上式为零。接着我们分析第一项，通过对第一项等效变换可得：
+
+$$
+\begin{aligned}
+&\sum\_i || \lambda \vec{R} \vec{l}\_i' - \vec{r}\_i||^2 \longrightarrow min \\\\
+\Longrightarrow&\sum\_i || \sqrt{\lambda} \vec{R} \vec{l}\_i' - \frac{1}{\sqrt{\lambda}}\vec{r}\_i||^2 \longrightarrow min \\\\
+=& \lambda \sum\_i || \vec{R}\vec{l}\_i'||^2 - 2 \sum\_i {\vec{r}\_i'}^{\rm{T}} \vec{R} \vec{l}\_i' + \frac{1}{\lambda}\sum\_i ||\vec{r}\_i' ||^2 \\\\
+\Longrightarrow& \lambda \sum\_i ||\vec{l}\_i'||^2 - 2 \sum\_i \vec{r}\_i^{\rm{T}} \vec{R} \vec{l}\_i' + \frac{1}{\lambda}\sum\_i ||\vec{r}\_i' ||^2 \\\\
+=& \lambda a - b + \frac{1}{\lambda}c \stackrel{min}{\longrightarrow} \lambda^2 = \frac{c}{a} \\\\
+\Longrightarrow& \lambda^2 = \frac{\sum\_i ||\vec{r}\_i'||^2}{\sum\_i||\vec{l}\_i'||^2} \\\\
+\Longrightarrow& \lambda = \sqrt{\frac{\sum\_i ||\vec{r}\_i'||^2}{\sum\_i||\vec{l}\_i'||^2}}
+\end{aligned} 
+$$
+
+要使得上式达到最小，我们还需要使b项达到最大：
+
+$$
+\begin{aligned}
+& \sum\_i {\vec{r}\_i'}^{\rm{T}} \vec{R} \vec{l}\_i' \longrightarrow max \\\\
+=& \begin{bmatrix} r\_x & r\_y \end{bmatrix} \begin{bmatrix} \cos{\alpha} & -\sin{\alpha} \\\\ \sin{\alpha} & \cos{\alpha} \end{bmatrix} \begin{bmatrix} l\_x \\\\ l\_y \end{bmatrix} \\\\
+=& \begin{bmatrix} r\_x & r\_y \end{bmatrix} \begin{bmatrix} l\_x \cos{\alpha} & -l\_y & \sin{\alpha} \\\\ l\_x \sin{\alpha} & +l\_y & \cos{\alpha} \end{bmatrix} \\\\
+=& r\_x l\_x \cos{\alpha} - r\_x l\_y \sin{\alpha} + r\_y l\_x \sin{\alpha} + r\_y l\_y \cos{\alpha} \\\\
+=& \cos{\alpha} (r\_xl\_x + r\_yl\_y) + \sin{\alpha}(-r\_xl\_y + r\_yl\_x)
+\end{aligned}
+$$
+
+

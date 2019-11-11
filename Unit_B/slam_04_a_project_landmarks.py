@@ -51,9 +51,10 @@ if __name__ == '__main__':
                            scanner_displacement)
 
         # Extract cylinders, also convert them to world coordinates.
-        cartesian_cylinders = compute_scanner_cylinders(
-            logfile.scan_data[i],
-            depth_jump, minimum_valid_distance, cylinder_offset)
+        cartesian_cylinders = compute_scanner_cylinders(logfile.scan_data[i],
+                                                        depth_jump, 
+                                                        minimum_valid_distance, 
+                                                        cylinder_offset)
         world_cylinders = [LegoLogfile.scanner_to_world(pose, c)
                            for c in cartesian_cylinders]
 

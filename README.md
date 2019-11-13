@@ -256,16 +256,36 @@ $$
 \tag{2.13}
 $$
 
-通过把\\(\lambda\\) 设置为1，上述式子还能从相似变换（similar transformation）转换为 僵硬变换 (rigid transformation) 。
+通过把\\(\lambda\\) 设置为1，上述式子还能从相似变换（similar transformation）转换为 僵硬变换 (rigid transformation) 。值得注意的是，为了计算出上式中四个变量，我们需要至少四个观测值（Observation），否则无法执行最小二乘法（least square）。程序slam\_04\_c 实现了最小二乘法（least square）。
 
+<div align=center><img src="https://i.imgur.com/BocRVM1.png" width="300px" /> </div>
+<div align=center> Fig B-5 利用最小二乘法匹配到的Landmark</div>
 
+下一步，在程序 >slam\_04\_d中 我们利用通过Landmark 确定下来的相似变换公式，同样可以用来矫正机器人的位置 (Pose) 和朝向 (Heading)，如下图所示：
 
+<div align=center><img src="https://i.imgur.com/LDRSsvc.png" width="400px" /> </div>
+<div align=center> Fig B-6 通过Landmark确定的相似变换公式矫正机器人的位置和朝向</div>
 
+$$
+\begin{aligned}
+\begin{bmatrix} x' \\\\ y' \end{bmatrix} &= \lambda \begin{bmatrix} \cos{\alpha} & -\sin{\alpha} \\\\ \sin{\alpha} & \cos{\alpha} \end{bmatrix} \begin{bmatrix} x \\\\ y \end{bmatrix} + \begin{bmatrix} t\_x \\\\ t\_y \end{bmatrix} \\\\
+\alpha &= atan2(\sin{\alpha}, \cos{\alpha})
+\end{aligned}
+\tag{2.14}
+$$
 
+<div align=center><img src="https://i.imgur.com/PXcII5Z.png" width="400px" /> </div>
+<div align=center> Fig B-7 通过Landmark确定的相似变换公式矫正机器人的位置和朝向，修正后的轨迹</div>
 
+将图 B-7与图 B-6 进行比较发现，在B-6中由于模型本身的参数误差造成的轨迹误差，通过观测Landmark的位置进行修正，在图 B-7 中有了很大的改善。
 
+利用雷达信息提取出Landmark信息，我们称之为 Feature Based Approach，但有时候雷达只能检测到一个 Landmark，此时便无法使用最小二乘法，但此时雷达仍然能获得墙壁的信息，这些信息没有特殊的Feature，但我们仍然可以利用它们。
 
+<div align=center><img src="https://i.imgur.com/EGbfA0p.png" width="500px" /> </div>
+<div align=center> Fig B-8 Feature Based Approach</div>
 
+<div align=center><img src="https://i.imgur.com/GHLzSqP.png" width="500px" /> </div>
+<div align=center> Fig B-9 利用墙壁的信息进行Non Feature Based Approach</div>
 
 
 

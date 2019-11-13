@@ -21,7 +21,6 @@ def find_cylinder_pairs(cylinders, reference_cylinders, max_radius):
     # and their distance is below max_radius, then add the
     # tuple (i,j) to cylinder_pairs, i.e., cylinder_pairs.append( (i,j) ).
     
-    
     for index1 in range(len(cylinders)):
         radius_old = max_radius
         

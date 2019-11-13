@@ -19,7 +19,22 @@ def find_cylinder_pairs(cylinders, reference_cylinders, max_radius):
     cylinder_pairs = []
 
     # --->>> Insert your previous solution here.
-
+    for index1 in range(len(cylinders)):
+        radius_old = max_radius
+        
+        for index2 in range(len(reference_cylinders)):
+            radius_new = sqrt(
+                    pow((cylinders[index1][0]-reference_cylinders[index2][0]),2)+
+                    pow((cylinders[index1][1]-reference_cylinders[index2][1]),2))
+            
+            if radius_new < max_radius and radius_new < radius_old:
+                radius_old = radius_new
+                i = index1
+                j = index2
+    
+        if radius_old < max_radius:
+            cylinder_pairs.append((i,j))
+        
     return cylinder_pairs
 
 # Given a point list, return the center of mass.
@@ -45,7 +60,49 @@ def estimate_transform(left_list, right_list, fix_scale = False):
     rc = compute_center(right_list)
 
     # --->>> Insert your previous solution here.
-
+    # Compute the new left and right list
+    left_new = []
+    right_new = []
+#    print len(left_list), len(right_list)
+    for i in range(len(left_list)):
+        left_new.append([left_list[i][0]-lc[0], left_list[i][1]-lc[1]])
+        right_new.append([right_list[i][0]-rc[0], right_list[i][1]-rc[1]])
+#        print left_list[i], right_list[i], left_new[i], right_new[i]
+    
+    # Compute sum of cos, sin, length of vector r, l 
+    cs = 0.0
+    ss = 0.0
+    rr = 0.0
+    ll = 0.0
+    
+    for i in range(len(left_list)):
+        cs += right_new[i][0]*left_new[i][0] + right_new[i][1]*left_new[i][1]
+        ss += -right_new[i][0]*left_new[i][1] + right_new[i][1]*left_new[i][0]
+        rr += right_new[i][0]*right_new[i][0] + right_new[i][1]*right_new[i][1]
+        ll += left_new[i][0]*left_new[i][0] + left_new[i][1]*left_new[i][1]
+    
+    # 4 parameter need 4 observation 
+    if rr == 0 and ll == 0:     
+        return None
+    
+    # Compute the lambda, scala variable
+    if fix_scale == False:
+        la = sqrt(rr/ll)
+    elif fix_scale == True:
+        la = 1.0
+    
+    # Compute the rotation angle in cos and sin term
+    if abs(sqrt(pow(cs,2) + pow(ss,2)) - 0.0) !=  0:
+        c = cs / sqrt(pow(cs,2) + pow(ss,2))
+        s = ss / sqrt(pow(cs,2) + pow(ss,2))
+    else:
+        return None
+    
+    
+    # compute the tranlation
+    tx = rc[0] - la*(c*lc[0] - s*lc[1])
+    ty = rc[1] - la*(s*lc[0] + c*lc[1])
+    
     return la, c, s, tx, ty
 
 # Given a similarity transformation:
@@ -63,10 +120,25 @@ def apply_transform(trafo, p):
 # similarity transform. Note this changes the position as well as
 # the heading.
 def correct_pose(pose, trafo):
-    
     # --->>> This is what you'll have to implement.
-
-    return (pose[0], pose[1], pose[2])  # Replace this by the corrected pose.
+    
+    # transfer the variable, give them names
+    la = trafo[0]
+    c = trafo[1]
+    s = trafo[2]
+    tx = trafo[3]
+    ty = trafo[4]
+    
+    if trafo:
+      x_new = la*(c*pose[0]-s*pose[1])+tx
+      y_new = la*(s*pose[0]+c*pose[1])+ty
+      alpha = atan2(s,c)  
+      theta_new = pose[2] + alpha
+      
+      return (x_new, y_new, theta_new)
+      
+    elif not trafo:
+        return (pose[0], pose[1], pose[2])  # Replace this by the corrected pose.
 
 
 if __name__ == '__main__':

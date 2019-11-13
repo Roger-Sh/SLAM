@@ -82,8 +82,8 @@ def estimate_transform(left_list, right_list, fix_scale = False):
         rr += right_new[i][0]*right_new[i][0] + right_new[i][1]*right_new[i][1]
         ll += left_new[i][0]*left_new[i][0] + left_new[i][1]*left_new[i][1]
     
-    
-    if rr == 0 and ll == 0:     # 4 parameter need 4 observation 
+    # 4 parameter need 4 observation 
+    if rr == 0 and ll == 0:     
         return None
     
     # Compute the lambda, scala variable

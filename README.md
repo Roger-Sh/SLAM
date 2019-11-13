@@ -7,7 +7,7 @@
 教程视频： [SLAM Lectures](https://www.youtube.com/playlist?list=PLpUPoM7Rgzi_7YWn14Va2FODh7LzADBSm)，Repo：[SLAM](https://github.com/ipa-fog-ws/SLAM)，该课程分为以下几个模块：
 
 - Unit A: Roboter, Sensor, Arena,Landmark, Motion Model, 
-- Unit B: LS-Square, correkt the trajektory, Iterative-Closest-Point
+- Unit B: LS-Square, correkt the trajektory, Feature Based Approach，Featureless Approach，Iterative-Closest-Point
 - Unit C: Filtering, Probability-Distribution, Base-Filter, Kalmann-Filter (One-Dimention)
 - Unit D: Multivariate Normal Distribution, Kalmann-Filter (Muilti-Dimention),  Extended-Kalmann-Filter(Non-Linear)
 - Unit E: Particle Filter

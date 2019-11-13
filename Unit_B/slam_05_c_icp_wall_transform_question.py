@@ -34,9 +34,49 @@ def estimate_transform(left_list, right_list, fix_scale = False):
     rc = compute_center(right_list)
 
     # --->>> Insert your previous solution here.
+    # Compute the new left and right list
+    left_new = []
+    right_new = []
+#    print len(left_list), len(right_list)
+    for i in range(len(left_list)):
+        left_new.append([left_list[i][0]-lc[0], left_list[i][1]-lc[1]])
+        right_new.append([right_list[i][0]-rc[0], right_list[i][1]-rc[1]])
+#        print left_list[i], right_list[i], left_new[i], right_new[i]
+    
+    # Compute sum of cos, sin, length of vector r, l 
+    cs = 0.0
+    ss = 0.0
+    rr = 0.0
+    ll = 0.0
+    
+    for i in range(len(left_list)):
+        cs += right_new[i][0]*left_new[i][0] + right_new[i][1]*left_new[i][1]
+        ss += -right_new[i][0]*left_new[i][1] + right_new[i][1]*left_new[i][0]
+        rr += right_new[i][0]*right_new[i][0] + right_new[i][1]*right_new[i][1]
+        ll += left_new[i][0]*left_new[i][0] + left_new[i][1]*left_new[i][1]
+    
+    # 4 parameter need 4 observation 
+    if rr == 0 and ll == 0:     
+        return None
+    
+    # Compute the lambda, scala variable
+    if fix_scale == False:
+        la = sqrt(rr/ll)
+    elif fix_scale == True:
+        la = 1.0
+    
+    # Compute the rotation angle in cos and sin term
+    if abs(sqrt(pow(cs,2) + pow(ss,2)) - 0.0) !=  0:
+        c = cs / sqrt(pow(cs,2) + pow(ss,2))
+        s = ss / sqrt(pow(cs,2) + pow(ss,2))
+    else:
+        return None
+    
+    # compute the translation
+    tx = rc[0] - la*(c*lc[0] - s*lc[1])
+    ty = rc[1] - la*(s*lc[0] + c*lc[1])
 
     return la, c, s, tx, ty
-
 
 # Given a similarity transformation:
 # trafo = (scale, cos(angle), sin(angle), x_translation, y_translation)
@@ -56,8 +96,22 @@ def apply_transform(trafo, p):
 def correct_pose(pose, trafo):
     
     # --->>> Insert your previous solution here.
-
-    return (pose[0], pose[1], pose[2])  # Replace this by the corrected pose.
+    la = trafo[0]
+    c = trafo[1]
+    s = trafo[2]
+    tx = trafo[3]
+    ty = trafo[4]
+    
+    if trafo:
+        x_new = la*(c*pose[0]-s*pose[1])+tx
+        y_new = la*(s*pose[0]+c*pose[1])+ty
+        alpha = atan2(s,c)  
+        theta_new = pose[2] + alpha
+      
+        return (x_new, y_new, theta_new)
+      
+    elif not trafo:
+        return (pose[0], pose[1], pose[2])  # Replace this by the corrected pose.
 
 
 # Takes one scan and subsamples the measurements, so that every sampling'th
@@ -83,6 +137,20 @@ def get_corresponding_points_on_wall(points,
     right_list = []
 
     # ---> Insert your previous solution here.
+    for point in points:
+        if abs(point[0]-arena_left) < eps:
+            left_list.append(point)
+            right_list.append((arena_left, point[1]))
+        elif abs(point[0]-arena_right) < eps:
+            left_list.append(point)
+            right_list.append((arena_right, point[1]))
+        elif abs(point[1]-arena_bottom) < eps:
+            left_list.append(point)
+            right_list.append((point[0], arena_bottom))
+        elif abs(point[1]-arena_top) < eps:
+            left_list.append(point)
+            right_list.append((point[0], arena_top))
+    
 
     return left_list, right_list
 
@@ -112,8 +180,26 @@ def get_icp_transform(world_points, iterations):
     # 
 
     # Return the final transformation.
+    
+    # Init the trafo
+    overall_trafo = (1.0, 1.0, 0.0, 0.0, 0.0)
+    
+    # Iterative Closest Points
+    for j in xrange(iterations):
+        # transform the points from LiDAR on the wall to the new estimation
+        world_points_new = [apply_transform(overall_trafo, p) for p in world_points]
+        # find the corresponding points on the wall
+        left, right = get_corresponding_points_on_wall(world_points_new)
+        # find the trafo for the next iteration
+        trafo = estimate_transform(left, right, fix_scale = True)
+        # concatenate the trafo ,like trafo chain
+        if trafo:
+            overall_trafo = concatenate_transform(trafo, overall_trafo)
+            
+        else:
+            break
+    
     return overall_trafo
-
 
 if __name__ == '__main__':
     # The constants we used for the filter_step.

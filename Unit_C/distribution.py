@@ -37,6 +37,7 @@ class Distribution:
             self.values = [i / s for i in self.values]
 
     def value(self, index):
+        """Output the value of the index"""
         index -= self.offset
         if index < 0 or index >= len(self.values):
             return 0.0
@@ -55,15 +56,13 @@ class Distribution:
         else:
             return ([], [])
 
+   
     @staticmethod
     def unit_pulse(center):
-        """Returns a unit pulse at center."""
         return Distribution(center, [1.0])
 
     @staticmethod
     def triangle(center, half_width):
-        """Returns a triangular distribution. The peak is at 'center' and it is
-           zero at center +/- half_width. center and half_width are integers."""
         w = int(half_width)
         c = int(center)
         values = []
@@ -77,10 +76,6 @@ class Distribution:
 
     @staticmethod
     def gaussian(mu, sigma, cut = 5.0):
-        """Returns a gaussian distribution, centered at mu, with variance
-           sigma**2. For efficiency reasons, the tails are cut at
-           cut * sigma, so with cut=5, it will fill the array from -5 sigma
-           to +5 sigma."""
         sigma2 = sigma * sigma
         extent = int(ceil(cut * sigma))
         values = []
@@ -98,15 +93,22 @@ class Distribution:
         # If weights are not given, generate them, all 1.0's.
         if not weights:
             weights = [1.0 for d in distributions]
+            
         # First make an all-zero list which covers all indices.
         start = min([d.start() for d in distributions])
         stop  = max([d.stop() for d in distributions])
         sum_dist = [0.0 for _ in xrange(start, stop)]
+        
+        
         for i in xrange(len(distributions)):
+            # every distribution
             dist = distributions[i]
+            
             # Now weight all values and add them to sum_dist.
             for j in xrange(len(dist.values)):
+                # this line is genius !!!
                 sum_dist[dist.start()-start+j] += dist.values[j] * weights[i]
+                
         d = Distribution(start, sum_dist)
         Distribution.normalize(d)
         return d

@@ -25,7 +25,7 @@ def find_cylinder_pairs(cylinders, reference_cylinders, max_radius):
         radius_old = max_radius
         
         for index2 in range(len(reference_cylinders)):
-            radius_new = np.sqrt(
+            radius_new = sqrt(
                     pow((cylinders[index1][0]-reference_cylinders[index2][0]),2)+
                     pow((cylinders[index1][1]-reference_cylinders[index2][1]),2))
             

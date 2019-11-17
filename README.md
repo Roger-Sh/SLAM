@@ -346,7 +346,6 @@ $$
     - use/add calibration parameters, 矫正过的参数可能和实际不匹配
     - can't capture all real world properties in the model，比如更换地面之后，摩擦力和位移会发生变化，模型不再适用
 - Random Error 随机误差
-- 
 
 <div align=center><img src="https://i.imgur.com/As2XjUr.png" width="400px" /> </div>
 <div align=center> Fig C-1 系统误差和随机误差</div>
@@ -355,3 +354,30 @@ $$
 
 <div align=center><img src="https://i.imgur.com/wPwrvbH.png" width="400px" /> </div>
 <div align=center> Fig C-2 机器人位置的概率分布</div>
+
+在程序 distribution.py 中我们设置了一个关于离散分布的类，里面包含了一个离散分布可能用到的各种变量和各种方法，程序 slam\_06\_a 展示了如何设置一个 distribution 的 offset 和 values 。
+
+接下来的问题是不确定性的传递，如下图所示，在初始位置我们很确定机器人的位置，到了第二步，机器人的位置有了不确定性，到了第三步，机器人的不确定性会在第二步之上继续叠加：
+
+<div align=center><img src="https://i.imgur.com/lZKH42i.png" width="400px" /> </div>
+<div align=center> Fig C-3 机器人位置的概率分布</div>
+
+如上图所示，当A事件发生时B事件发生的概率为：
+
+$$
+P(A,B) = P(B|A)P(A) \tag{3.1}
+$$
+
+第二步中机器人位于每个位置的可能性如下图所示：
+
+<div align=center><img src="https://i.imgur.com/LYPVJiC.png" width="400px" /> </div>
+<div align=center> Fig C-3 机器人位置的概率分布</div>
+
+$$
+\rm{Total\ posibility:\ } P(A,B) = \sum\_i P(B|A\_i)P(A\_i) \tag{3.2}
+$$
+
+对于上图的概率分布，这实际上相当于对事件A的概率用事件B的概率进行卷积，程序 slam\_06\_b 实现了对概率分布进行卷积操作。下图展示了一个机器人的位置如何通过三次位移后达到一个不确定状态以及其每一步位移之后位置的概率分布：
+
+<div align=center><img src="https://i.imgur.com/1K5XmIY.png" width="400px" /> </div>
+<div align=center> Fig C-4 机器人经过三次位移之后的概率分布</div>

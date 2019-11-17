@@ -9,8 +9,11 @@ def move(distribution, delta):
        delta."""
 
     # --->>> Copy your previous code here.
-
-    return distribution  # Replace this by your own result.
+    new_center = distribution.offset + delta
+    new_values = distribution.values
+    new_distribution = Distribution(new_center,new_values)
+    
+    return new_distribution  # Replace this by your own result.
 
 
 def convolve(a, b):
@@ -18,8 +21,25 @@ def convolve(a, b):
 
     # --->>> Put your code here.
     
-    return a  # Replace this by your own result.
-
+    # offset for next step
+    offset = a.offset + b.offset;
+    
+    # init the distri_list
+    distri_list = []
+    
+    # calculate several distributions according to the number of a
+    for a_value in a.values:
+        distri_value = []
+        for b_value in b.values:
+            distri_value.append(a_value*b_value)
+        distri_list.append(Distribution(offset, distri_value))
+        offset += 1
+        
+#    for i in xrange(len(distri_list)):
+#        print distri_list[i]
+    
+    return Distribution.sum(distri_list)
+    
 
 if __name__ == '__main__':
     arena = (0,100)
@@ -29,13 +49,17 @@ if __name__ == '__main__':
 
     # Start with a known position: probability 1.0 at position 10.
     position = Distribution.unit_pulse(10)
+    
     plot(position.plotlists(*arena)[0], position.plotlists(*arena)[1],
          linestyle='steps')
 
     # Now move and plot.
     for m in moves:
         move_distribution = Distribution.triangle(m, 2)
+        
+        # convolution 
         position = convolve(position, move_distribution)
+        
         plot(position.plotlists(*arena)[0], position.plotlists(*arena)[1],
              linestyle='steps')
 

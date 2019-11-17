@@ -9,8 +9,11 @@ def move(distribution, delta):
        delta."""
 
     # --->>> Insert your code here.
+    new_center = distribution.offset + delta
+    new_values = distribution.values
+    new_distribution = Distribution(new_center,new_values)
     
-    return distribution  # Replace this by your own result.
+    return new_distribution  # Replace this by your own result.
 
 if __name__ == '__main__':
     # List of movements: move 3 times by 20.
@@ -18,6 +21,7 @@ if __name__ == '__main__':
 
     # Start with a known position: probability 1.0 at position 10.
     position = Distribution.triangle(10,2)
+    print position
     plot(position.plotlists(0,100)[0], position.plotlists(0,100)[1],
          linestyle='steps')
 

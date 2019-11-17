@@ -3,8 +3,7 @@
 ## Introduction 
 
 这份笔记是针对汉诺威大学Claus Brenner教授的课程SLAM 整理而来，笔记内的某些专业词汇可能是德语，该笔记仅供个人学习使用。课程所需的编程环境为python2.7. 在github页面正确显示公式需要安装一个插件: 
-[MathJax Plugin for Github](https://chrome.google.com/webstore/detail/mathjax-plugin-for-github/ioemnmodlmafdkllaclgeombjnmnbima),
-教程视频： [SLAM Lectures](https://www.youtube.com/playlist?list=PLpUPoM7Rgzi_7YWn14Va2FODh7LzADBSm)，Repo：[SLAM](https://github.com/ipa-fog-ws/SLAM)，该课程分为以下几个模块：
+[MathJax Plugin for Github](https://chrome.google.com/webstore/detail/mathjax-plugin-for-github/ioemnmodlmafdkllaclgeombjnmnbima), 教程视频： [SLAM Lectures](https://www.youtube.com/playlist?list=PLpUPoM7Rgzi_7YWn14Va2FODh7LzADBSm)，Repo：[SLAM](https://github.com/ipa-fog-ws/SLAM)，该课程分为以下几个模块：
 
 - Unit A: Roboter, Sensor, Arena,Landmark, Motion Model, 
 - Unit B: LS-Square, correkt the trajektory, Feature Based Approach，Featureless Approach，Iterative-Closest-Point
@@ -97,19 +96,16 @@ $$
 
 <div align=center><img src="https://i.imgur.com/usofPRd.png" width="400px" /> </div>
 <div align=center> Fig A-13 Landmark 相对于LiDAR的笛卡尔坐标</div>
-
 ### Unit B
 
 在转弯的时候，Landmark的估计结果有较大误差，通过比较估计的Landmark和实际的Landmark的差距，我们可以矫正对应的小车位置。
 
 <div align=center><img src="https://i.imgur.com/5KQvCNR.png" width="300px" /> </div>
 <div align=center> Fig B-1 Landmark 估计与实际位置的差距</div>
-
 首先通过 slam\_04\_a 可以将Landmark相对于地图的笛卡尔坐标计算出来，结果与上图通过 logfile\_viewer 类似。 我们要把探测到的Landmark与实际存在的最近的Landmark进行匹配。程序 slam\_04\_b 实现了这样的效果。 
 
 <div align=center><img src="https://i.imgur.com/1zeFH7m.png" width="400px" /> </div>
 <div align=center> Fig B-2 Landmark 估计位置与实际位置进行配准</div>
-
 下一步是将匹配好的点经过旋转位移等操作进行配准。对点云进行配准需要相似变换：
 
 $$
@@ -153,7 +149,6 @@ $$
 
 <div align=center><img src="https://i.imgur.com/osnykQi.png" width="250px" /> </div>
 <div align=center> Fig B-3 点云基于中心点的坐标向量</div>
-
 由此可得：
 
 $$
@@ -220,7 +215,6 @@ $$
 
 <div align=center><img src="https://i.imgur.com/a9yx72T.png" width="300px" /> </div>
 <div align=center> Fig B-4 向量乘积</div>
-
 所以当满足以下条件时达到最大：
 
 $$
@@ -260,12 +254,10 @@ $$
 
 <div align=center><img src="https://i.imgur.com/BocRVM1.png" width="300px" /> </div>
 <div align=center> Fig B-5 利用最小二乘法匹配到的Landmark</div>
-
 下一步，在程序 >slam\_04\_d中 我们利用通过Landmark 确定下来的相似变换公式，同样可以用来矫正机器人的位置 (Pose) 和朝向 (Heading)，如下图所示：
 
 <div align=center><img src="https://i.imgur.com/LDRSsvc.png" width="400px" /> </div>
 <div align=center> Fig B-6 通过Landmark确定的相似变换公式矫正机器人的位置和朝向</div>
-
 $$
 \begin{aligned}
 \begin{bmatrix} x' \\\\ y' \end{bmatrix} &= \lambda \begin{bmatrix} \cos{\alpha} & -\sin{\alpha} \\\\ \sin{\alpha} & \cos{\alpha} \end{bmatrix} \begin{bmatrix} x \\\\ y \end{bmatrix} + \begin{bmatrix} t\_x \\\\ t\_y \end{bmatrix} \\\\
@@ -276,52 +268,63 @@ $$
 
 <div align=center><img src="https://i.imgur.com/PXcII5Z.png" width="400px" /> </div>
 <div align=center> Fig B-7 通过Landmark确定的相似变换公式矫正机器人的位置和朝向，修正后的轨迹</div>
-
 将图 B-7与图 B-6 进行比较发现，在B-6中由于模型本身的参数误差造成的轨迹误差，通过观测Landmark的位置进行修正，在图 B-7 中有了很大的改善，但此时由于Feature点较少，轨迹修正不够顺滑，图中机器人的轨迹有较大突变，这不是我们想要的结果。利用雷达信息提取出Landmark信息，我们称之为 Feature Based Approach，但有时候雷达只能检测到一个 Landmark，此时便无法使用最小二乘法，但此时雷达仍然能获得墙壁的信息，这些信息没有特殊的Feature，但我们仍然可以利用它们，这种方法称为 Featureless Approach。
 
 <div align=center><img src="https://i.imgur.com/EGbfA0p.png" width="400px" /> </div>
 <div align=center> Fig B-8 Feature Based Approach</div>
-
 <div align=center><img src="https://i.imgur.com/GHLzSqP.png" width="400px" /> </div>
 <div align=center> Fig B-9 利用墙壁的信息进行Non Feature Based Approach</div>
-
 在程序slam\_05\_a 中，LiDAR获取的墙面数据与场地墙面坐标进行比较，找出墙面上与LiDAR数据最接近的坐标，下图展示了LiDAR数据点与最近的墙面坐标：
 
 <div align=center><img src="https://i.imgur.com/oNeS4ET.png" width="400px" /> </div>
 <div align=center> Fig B-10 匹配的墙面与LiDAR数据点</div>
-
 同样的，基于墙面信息同样能得到相似变化公式，从而来矫正机器人的轨迹，程序slam\_05\_b 中实现了利用墙面信息进行相似矩阵估计并矫正机器人轨迹的算法，下图展示了Featureless Approach的效果：
 
 <div align=center><img src="https://i.imgur.com/wnrajnU.png" width="400px" /> </div>
 <div align=center> Fig B-11 Featureless Approach</div>
-
 该基于墙面信息的Featureless Approach 的缺点在于，每个墙面的数据点都想要进行修正，然而却互相牵制，无法直接达到最优化效果，如下图所示：
 
 <div align=center><img src="https://i.imgur.com/e9EksOL.png" width="300px" /> </div>
 <div align=center> Fig B-12 Featureless Approach 的缺点</div>
-
 为了达到最优效果，我们采取迭代最近点的方法，即 Iterative Closest Point (ICP)，每次优化之后，更新相似变换矩阵，通过迭代的方式最终达到最优化状态：
 
 <div align=center><img src="https://i.imgur.com/z6uBIrB.png" width="300px" /> </div>
 <div align=center> Fig B-13 Iterative Closest Point (ICP)</div>
-
 程序slam\_05\_c 中实现了ICP的算法，伪代码如下：
 
-	# Init overall_trafo
-   	overall_trafo = (1.0, 1.0, 0.0, 0.0, 0.0)
-
-    	for j in xrange(iterations):
-    	 	将world_points_init 变换成 world_points_new
-    		Call get_correspoinding_points_on_wall(...) 找到对应的墙上的点
-    		找出从world_points_new 变换成 墙上的点的trafo
-    		将旧的overall_trafo与新的trafo连接，overall_trafo = concatenate_transform(trafo, overall_trafo)
-		当trafo返回为none的时候，结束循环
-
+	# Init overall_trafoo	
+	verall_trafo = (1.0, 1.0, 0.0, 0.0, 0.0)
+	for j in xrange(iterations):
+	 	将world_points_init 变换成 world_points_new
+		Call get_correspoinding_points_on_wall(...) 找到对应的墙上的点
+		找出从world_points_new 变换成 墙上的点的trafo
+		将旧的overall_trafo与新的trafo连接，
+		overall_trafo = concatenate_transform(trafo, overall_trafo)
+	if trafo返回为none的时候，
+		结束循环
 	返回最终的overrall_trafo
+
 
 利用 ICP 算法矫正的机器人轨迹如下：
 
 <div align=center><img src="https://i.imgur.com/SDsBqdC.png" width="400px" /> </div>
 <div align=center> Fig B-14 利用 ICP 算法矫正的机器人轨迹</div>
+将图 B-14 与 图B-12 以及 B-13 相比较，可以看出，Feature Based Approach (利用Landmark信息) 的轨迹有较大突变，Feautureless Approach （利用墙面信息，无 ICP） 的轨迹比较顺滑，Featureless Approach with ICP 的算法，轨迹最为顺滑。
 
-将图 B-14 与 图B-12 以及 B-13 相比较，可以看出，Feature Based Approach (利用Landmark信息) 的轨迹有较大突变，Feautureless Approach （利用墙面信息，无 ICP） 的轨迹比较顺滑，Featureless Approach with ICP 的算法，轨迹最为顺滑
+### Unit C
+
+从Unit A 中我们了解到，由于未对机器人的建模参数进行矫正 (calibration), 所以机器人在转弯的时候有较大的误差。通过对前面章节机器人的轨迹误差进行分析，可以将机器人的轨迹误差大致分为两类：
+
+- Systematic Error 系统误差
+    - use/add calibration parameters, 矫正过的参数可能和实际不匹配
+    - can't capture all real world properties in the model，比如更换地面之后，摩擦力和位移会发生变化，模型不再适用
+- Random Error 随机误差
+- 
+
+<div align=center><img src="https://i.imgur.com/As2XjUr.png" width="400px" /> </div>
+<div align=center> Fig C-1 系统误差和随机误差</div>
+
+我们来考虑以下机器人一维下的移动，其位置精度的概率分布可能如下：
+
+<div align=center><img src="https://i.imgur.com/wPwrvbH.png" width="400px" /> </div>
+<div align=center> Fig C-2 机器人位置的概率分布</div>

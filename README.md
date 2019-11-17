@@ -19,22 +19,27 @@ Unit A 的内容是对一个乐高小车的运动进行建模，首先利用乐�
 
 <div align=center><img src="https://i.imgur.com/0uQWKGA.png" width="400px" /> </div>
 <div align=center> Fig A-1 Lego Car </div>
+
 <div align=center><img src="https://i.imgur.com/DBH8449.png" width="400px" /> </div>
 <div align=center> Fig A-2 Arena and Landmark </div>
+
 下图展示了乐高小车的运动模型，由两个电机带动左右履带，履带的位移差距可以让小车进行转向。
 
 <div align=center><img src="https://i.imgur.com/YErhk8h.png" width="400px" /> </div>
 <div align=center> Fig A-3 Lego Car Structur</div>
+
 小车的编码器可以表示电机的角度，经过换算，1 tick 约为 0,349 mm 履带前进的距离。下图表示了一个电机的log-file中的内容。
 
 <div align=center><img src="https://i.imgur.com/lMD8jBt.png" width="400px" /> </div>
 <div align=center> Fig A-4 Motor log file </div>
+
 其中，第0列 'M' 表示Motor, 第1列表示时间戳 (time stamp), 第2列表示左轮Motor的编码， 第6列表示右轮Motor的编码，第10列表示第三个motor的编码，这里我们只需要左轮和右轮的motor即可。slam\_01\_a， slam\_01\_b，slam\_01\_c 这三个程序展示了如何通过lego\_robot 这个class来读取robot4\_motors.txt 。
 
 下一步是建立小车转弯时的运动模型。
 
 <div align=center><img src="https://i.imgur.com/p6utG7D.png" width="400px" /> </div>
 <div align=center> Fig A-5 Motion Model</div>
+
 由下列公式可以得到小车绕中心点旋转时的旋转半径 \\(R\\) 和旋转的角度 \\(\alpha\\)：
 
 $$
@@ -52,6 +57,7 @@ p点和p'点之间的坐标关系可以通过中心点c联系起来：
 
 <div align=center><img src="https://i.imgur.com/t2V9Qr2.png" width="400px" /> </div>
 <div align=center> Fig A-6 Motion Model</div>
+
 c点和p‘的坐标为：
 
 $$
@@ -66,18 +72,22 @@ slam\_02\_a 展示了如何通过读取乐高小车的电机logfile，将其转�
 
 <div align=center><img src="https://i.imgur.com/9ZCm8qe.png" width="300px" /> </div>
 <div align=center> Fig A-7 Displacement</div>
+
 logfile\_viewer.py 可以将 poses\_from\_ticks.txt 可视化。 
 
 <div align=center><img src="https://i.imgur.com/fxJ9nVi.png" width="400px" /> </div>
 <div align=center> Fig A-8 logfile_view</div>
+
 在可视化窗口中加入robot4\_reference.txt，可以观察到小车和参考轨迹之间的差距，这是由于小车的宽度参数并不是实际参数，通过修改robot\_width这一变量，可以调整计算得来的轨迹精度。
 
 <div align=center><img src="https://i.imgur.com/6m6u3x9.png" width="600px" /> </div>
 <div align=center> Fig A-9 logfile_view, left: robot_width=150, right: robot_width=171</div>
+
 下一步是引入传感器LiDAR得到的深度信息，以此来确定Arena中的Landmark位置。在可视化窗口载入robot4\_scan.txt, 可以观察到小车的传感器信息，
 
 <div align=center><img src="https://i.imgur.com/5NyxAfq.png" width="800px" /> </div>
 <div align=center> Fig A-10 left: robot4\_scan.txt, middle: 可视化窗口, right: 单次时间点读取的数据</div>
+
 为了得到Landmark的数量，我们要对传感器数据进行微分，得到单次时间不同角度之间的差值 (derivative)，通过计数每次传感器数值的突变来得到Landmark的数量：
 
 $$
@@ -88,24 +98,29 @@ $$
 
 <div align=center><img src="https://i.imgur.com/G93N2pT.png" width="400px" /> </div>
 <div align=center> Fig A-11 传感器LiDAR的数据及其微分</div>
+
 在程序slam\_03\_c中，通过对Landmark左边的edge和右边的edge进行计数，可以得到Landmark的数量，通过对左edge和右edge之间的数值求平均值，可以得到该Landmark相对于传感器的角度和深度信息，以此，我们可以确定该Landmark的位置。
 
 <div align=center><img src="https://i.imgur.com/36qq7A7.png" width="400px" /> </div>
 <div align=center> Fig A-12 Landmark 相对于LiDAR的极坐标</div>
+
 在程序slam\_03\_d中，我们将Landmark的位置从相对LiDAR的极坐标位置转换成笛卡尔坐标系位置，并考虑到传感器接触Landmark表面与Lanmark中心点之间的差值大约为90mm, 最终结果输出到可视化窗口后如图，小绿点为Landmark通过建模估计得到的位置，灰点为Landmark实际位置：
 
 <div align=center><img src="https://i.imgur.com/usofPRd.png" width="400px" /> </div>
 <div align=center> Fig A-13 Landmark 相对于LiDAR的笛卡尔坐标</div>
+
 ### Unit B
 
 在转弯的时候，Landmark的估计结果有较大误差，通过比较估计的Landmark和实际的Landmark的差距，我们可以矫正对应的小车位置。
 
 <div align=center><img src="https://i.imgur.com/5KQvCNR.png" width="300px" /> </div>
 <div align=center> Fig B-1 Landmark 估计与实际位置的差距</div>
+
 首先通过 slam\_04\_a 可以将Landmark相对于地图的笛卡尔坐标计算出来，结果与上图通过 logfile\_viewer 类似。 我们要把探测到的Landmark与实际存在的最近的Landmark进行匹配。程序 slam\_04\_b 实现了这样的效果。 
 
 <div align=center><img src="https://i.imgur.com/1zeFH7m.png" width="400px" /> </div>
 <div align=center> Fig B-2 Landmark 估计位置与实际位置进行配准</div>
+
 下一步是将匹配好的点经过旋转位移等操作进行配准。对点云进行配准需要相似变换：
 
 $$
@@ -149,6 +164,7 @@ $$
 
 <div align=center><img src="https://i.imgur.com/osnykQi.png" width="250px" /> </div>
 <div align=center> Fig B-3 点云基于中心点的坐标向量</div>
+
 由此可得：
 
 $$
@@ -215,6 +231,7 @@ $$
 
 <div align=center><img src="https://i.imgur.com/a9yx72T.png" width="300px" /> </div>
 <div align=center> Fig B-4 向量乘积</div>
+
 所以当满足以下条件时达到最大：
 
 $$
@@ -254,10 +271,12 @@ $$
 
 <div align=center><img src="https://i.imgur.com/BocRVM1.png" width="300px" /> </div>
 <div align=center> Fig B-5 利用最小二乘法匹配到的Landmark</div>
+
 下一步，在程序 >slam\_04\_d中 我们利用通过Landmark 确定下来的相似变换公式，同样可以用来矫正机器人的位置 (Pose) 和朝向 (Heading)，如下图所示：
 
 <div align=center><img src="https://i.imgur.com/LDRSsvc.png" width="400px" /> </div>
 <div align=center> Fig B-6 通过Landmark确定的相似变换公式矫正机器人的位置和朝向</div>
+
 $$
 \begin{aligned}
 \begin{bmatrix} x' \\\\ y' \end{bmatrix} &= \lambda \begin{bmatrix} \cos{\alpha} & -\sin{\alpha} \\\\ \sin{\alpha} & \cos{\alpha} \end{bmatrix} \begin{bmatrix} x \\\\ y \end{bmatrix} + \begin{bmatrix} t\_x \\\\ t\_y \end{bmatrix} \\\\
@@ -268,32 +287,39 @@ $$
 
 <div align=center><img src="https://i.imgur.com/PXcII5Z.png" width="400px" /> </div>
 <div align=center> Fig B-7 通过Landmark确定的相似变换公式矫正机器人的位置和朝向，修正后的轨迹</div>
+
 将图 B-7与图 B-6 进行比较发现，在B-6中由于模型本身的参数误差造成的轨迹误差，通过观测Landmark的位置进行修正，在图 B-7 中有了很大的改善，但此时由于Feature点较少，轨迹修正不够顺滑，图中机器人的轨迹有较大突变，这不是我们想要的结果。利用雷达信息提取出Landmark信息，我们称之为 Feature Based Approach，但有时候雷达只能检测到一个 Landmark，此时便无法使用最小二乘法，但此时雷达仍然能获得墙壁的信息，这些信息没有特殊的Feature，但我们仍然可以利用它们，这种方法称为 Featureless Approach。
 
 <div align=center><img src="https://i.imgur.com/EGbfA0p.png" width="400px" /> </div>
 <div align=center> Fig B-8 Feature Based Approach</div>
+
 <div align=center><img src="https://i.imgur.com/GHLzSqP.png" width="400px" /> </div>
 <div align=center> Fig B-9 利用墙壁的信息进行Non Feature Based Approach</div>
+
 在程序slam\_05\_a 中，LiDAR获取的墙面数据与场地墙面坐标进行比较，找出墙面上与LiDAR数据最接近的坐标，下图展示了LiDAR数据点与最近的墙面坐标：
 
 <div align=center><img src="https://i.imgur.com/oNeS4ET.png" width="400px" /> </div>
 <div align=center> Fig B-10 匹配的墙面与LiDAR数据点</div>
+
 同样的，基于墙面信息同样能得到相似变化公式，从而来矫正机器人的轨迹，程序slam\_05\_b 中实现了利用墙面信息进行相似矩阵估计并矫正机器人轨迹的算法，下图展示了Featureless Approach的效果：
 
 <div align=center><img src="https://i.imgur.com/wnrajnU.png" width="400px" /> </div>
 <div align=center> Fig B-11 Featureless Approach</div>
+
 该基于墙面信息的Featureless Approach 的缺点在于，每个墙面的数据点都想要进行修正，然而却互相牵制，无法直接达到最优化效果，如下图所示：
 
 <div align=center><img src="https://i.imgur.com/e9EksOL.png" width="300px" /> </div>
 <div align=center> Fig B-12 Featureless Approach 的缺点</div>
+
 为了达到最优效果，我们采取迭代最近点的方法，即 Iterative Closest Point (ICP)，每次优化之后，更新相似变换矩阵，通过迭代的方式最终达到最优化状态：
 
 <div align=center><img src="https://i.imgur.com/z6uBIrB.png" width="300px" /> </div>
 <div align=center> Fig B-13 Iterative Closest Point (ICP)</div>
+
 程序slam\_05\_c 中实现了ICP的算法，伪代码如下：
 
 	# Init overall_trafoo	
-	verall_trafo = (1.0, 1.0, 0.0, 0.0, 0.0)
+	overall_trafo = (1.0, 1.0, 0.0, 0.0, 0.0)
 	for j in xrange(iterations):
 	 	将world_points_init 变换成 world_points_new
 		Call get_correspoinding_points_on_wall(...) 找到对应的墙上的点
@@ -309,6 +335,7 @@ $$
 
 <div align=center><img src="https://i.imgur.com/SDsBqdC.png" width="400px" /> </div>
 <div align=center> Fig B-14 利用 ICP 算法矫正的机器人轨迹</div>
+
 将图 B-14 与 图B-12 以及 B-13 相比较，可以看出，Feature Based Approach (利用Landmark信息) 的轨迹有较大突变，Feautureless Approach （利用墙面信息，无 ICP） 的轨迹比较顺滑，Featureless Approach with ICP 的算法，轨迹最为顺滑。
 
 ### Unit C

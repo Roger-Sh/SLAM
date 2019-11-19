@@ -109,7 +109,7 @@ $$
 <div align=center><img src="https://i.imgur.com/usofPRd.png" width="400px" /> </div>
 <div align=center> Fig A-13 Landmark 相对于LiDAR的笛卡尔坐标</div>
 
-### Unit B
+## Unit B
 
 在转弯的时候，Landmark的估计结果有较大误差，通过比较估计的Landmark和实际的Landmark的差距，我们可以矫正对应的小车位置。
 
@@ -318,6 +318,7 @@ $$
 
 程序slam\_05\_c 中实现了ICP的算法，伪代码如下：
 
+```python
 	# Init overall_trafoo	
 	overall_trafo = (1.0, 1.0, 0.0, 0.0, 0.0)
 	for j in xrange(iterations):
@@ -329,7 +330,7 @@ $$
 	if trafo返回为none的时候，
 		结束循环
 	返回最终的overrall_trafo
-
+```
 
 利用 ICP 算法矫正的机器人轨迹如下：
 
@@ -338,7 +339,7 @@ $$
 
 将图 B-14 与 图B-12 以及 B-13 相比较，可以看出，Feature Based Approach (利用Landmark信息) 的轨迹有较大突变，Feautureless Approach （利用墙面信息，无 ICP） 的轨迹比较顺滑，Featureless Approach with ICP 的算法，轨迹最为顺滑。
 
-### Unit C
+## Unit C
 
 从Unit A 中我们了解到，由于未对机器人的建模参数进行矫正 (calibration), 所以机器人在转弯的时候有较大的误差。通过对前面章节机器人的轨迹误差进行分析，可以将机器人的轨迹误差大致分为两类：
 

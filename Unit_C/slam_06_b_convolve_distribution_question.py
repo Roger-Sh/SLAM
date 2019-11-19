@@ -42,10 +42,10 @@ def convolve(a, b):
     
 
 if __name__ == '__main__':
-    arena = (0,100)
+    arena = (0,1000)
 
     # Move 3 times by 20.
-    moves = [20] * 3
+    moves = [20] * 250  
 
     # Start with a known position: probability 1.0 at position 10.
     position = Distribution.unit_pulse(10)

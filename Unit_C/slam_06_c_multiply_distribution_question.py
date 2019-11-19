@@ -8,8 +8,19 @@ def multiply(a, b):
     """Multiply two distributions and return the resulting distribution."""
 
     # --->>> Put your code here.
+    start = min([a.start(), b.start()])
+    stop = max([a.stop(), b.stop()])
     
-    return a  # Modify this to return your result.
+    values = []
+    
+    for i in range(start, stop):
+        values.append(a.value(i) * b.value(i))
+    
+    result_distri = Distribution(start, values)
+    
+    result_distri.normalize()
+    
+    return result_distri
 
 
 if __name__ == '__main__':

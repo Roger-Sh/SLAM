@@ -34,9 +34,6 @@ def convolve(a, b):
             distri_value.append(a_value*b_value)
         distri_list.append(Distribution(offset, distri_value))
         offset += 1
-        
-#    for i in xrange(len(distri_list)):
-#        print distri_list[i]
     
     return Distribution.sum(distri_list)
     

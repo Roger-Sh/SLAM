@@ -11,8 +11,11 @@ def move(distribution, delta):
        delta."""
 
     # --->>> Copy your previous code here.
-
-    return distribution  # Replace this by your own result.
+    new_center = distribution.offset + delta
+    new_values = distribution.values
+    new_distribution = Distribution(new_center,new_values)
+    
+    return new_distribution  # Replace this by your own result.
 
 
 def convolve(a, b):
@@ -20,15 +23,40 @@ def convolve(a, b):
 
     # --->>> Copy your previous code here.
     
-    return a  # Replace this by your own result.
+    # offset for next step
+    offset = a.offset + b.offset;
+    
+    # init the distri_list
+    distri_list = []
+    
+    # calculate several distributions according to the number of a
+    for a_value in a.values:
+        distri_value = []
+        for b_value in b.values:
+            distri_value.append(a_value*b_value)
+        distri_list.append(Distribution(offset, distri_value))
+        offset += 1
+    
+    return Distribution.sum(distri_list)
 
 
 def multiply(a, b):
     """Multiply two distributions and return the resulting distribution."""
 
     # --->>> Copy your previous code here.
+    start = min([a.start(), b.start()])
+    stop = max([a.stop(), b.stop()])
     
-    return a  # Modify this to return your result.
+    values = []
+    
+    for i in range(start, stop):
+        values.append(a.value(i) * b.value(i))
+    
+    result_distri = Distribution(start, values)
+    
+    result_distri.normalize()
+    
+    return result_distri
 
 
 if __name__ == '__main__':
@@ -36,6 +64,8 @@ if __name__ == '__main__':
 
     # Start position. Exactly known - a unit pulse.
     start_position = 10
+    
+    # start distribution, unit pulse
     position = Distribution.unit_pulse(start_position)
     plot(position.plotlists(*arena)[0], position.plotlists(*arena)[1],
          linestyle='steps')

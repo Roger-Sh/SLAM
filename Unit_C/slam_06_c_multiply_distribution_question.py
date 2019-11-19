@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     # Here is our measurement. Plotted in green.
     # That is what we read from the instrument.
-    measured_value = 410
+    measured_value = 500
     measurement_error = 200
     measurement = Distribution.triangle(measured_value, measurement_error)
     plot(measurement.plotlists(*arena)[0], measurement.plotlists(*arena)[1],

@@ -40,7 +40,8 @@ def histogram_filter_step(belief, control, measurement):
 #
 if __name__ == '__main__':
     arena = (0,200)
-    Dist = Distribution.triangle  # Distribution.triangle or Distribution.gaussian.
+    #Dist = Distribution.triangle  # Distribution.triangle or Distribution.gaussian.
+    Dist = Distribution.gaussian
 
     # Start position. Well known, so the distribution is narrow.
     position = Dist(10, 1)

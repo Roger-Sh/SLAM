@@ -1,4 +1,4 @@
-# SLAM - Simultaneous localization and mapping
+ # SLAM - Simultaneous localization and mapping
 
 ## Introduction 
 
@@ -7,7 +7,7 @@
 
 - Unit A: Roboter, Sensor, Arena,Landmark, Motion Model, 
 - Unit B: LS-Square, correkt the trajektory, Feature Based Approach，Featureless Approach，Iterative-Closest-Point
-- Unit C: Filtering, Probability-Distribution, Base-Filter, Kalmann-Filter (One-Dimention)
+- Unit C: Probability-Distribution, Bayes-Filter, Kalmann-Filter (One-Dimention)
 - Unit D: Multivariate Normal Distribution, Kalmann-Filter (Muilti-Dimention),  Extended-Kalmann-Filter(Non-Linear)
 - Unit E: Particle Filter
 - Unit F: Mapping, Extended-Kalmann-Filter SLAM
@@ -382,3 +382,66 @@ $$
 
 <div align=center><img src="https://i.imgur.com/1K5XmIY.png" width="400px" /> </div>
 <div align=center> Fig C-4 机器人经过三次位移之后的概率分布</div>
+
+机器人通过建模对自身位置进行估计时，我们要考虑到由于模型的局限性带来的随机误差。机器人通过传感器对自身位置进行估计时，同样要考虑随机误差，模型的随机误差和传感器的随机误差通过相乘结合到一起。
+
+<div align=center><img src="https://i.imgur.com/c1P9a7b.png" width="400px" /> </div>
+<div align=center> Fig C-5 测量随机误差，模型随机误差，以及其总体随机误差</div>
+
+如上图，模型随机误差我们称之为 先验 (Prior)， 测量随机误差我们称之为 测量(Measurment), 他们的总体误差将通过这两者随机误差相乘得到。
+
+首先我们来了解一下条件概率：
+
+$$
+\begin{aligned}
+Posterior Probability\ (后验概率) &= \frac{Prior Probability\ (先验概率)}{Evidence\ (证据)} \\\\
+\\\\
+P(X|Z) &= \frac{P(Z|X)\cdot P(X)}{P(Z)}\\\\
+&= \frac{P(Z|X)\cdot P(X)}{\sum\_{x'}P(Z|x')\cdot P(x')}
+\end{aligned}
+\tag{3.3}
+$$
+
+程序 slam\_06\_c 实现了两个概率分布相乘的算法，效果图如下：
+
+<div align=center><img src="https://i.imgur.com/5qM2JIH.png" width="400px" /> </div>
+<div align=center> Fig C-6 概率分布相乘</div>
+
+通过对Measurement的位移，Posterior的改变如下：
+
+<div align=center><img src="https://i.imgur.com/AhXYyi2.png" width="400px" /> </div>
+<div align=center> Fig C-7 Measurement位移造成的Posterior的改变</div>
+
+对于机器人小车而言，基于模型的位置估计有随机误差，基于传感器的观测也有随机误差，我们不能只相信模型或只相信传感器，而是要对这两者的概率分布进行结合。对于每一步小车的移动，首先要把小车模型的概率分布与上一时间点小车总体的概率分布进行卷积，得到这一步小车模型的概率分布，其次通过与传感器的高铝分布相乘，得到此时小车最终的概率分布：
+
+1. Motion - Convolution
+	
+$$
+P(X) = \sum\_y P(X|y) \cdot P(y) \tag{3.4}
+$$
+
+2. Measurement - Multiplication
+
+$$
+P(X|Z) = \alpha \cdot P(Z|X) \cdot P(X) \tag{3.5}
+$$
+
+<div align=center><img src="https://i.imgur.com/TNCq9dC.jpg" width="400px" /> </div>
+<div align=center> Fig C-8 某一时间点小车的模型概率部分与传感器的概率分布</div>
+
+计算机器人位置整体概率分布的算法如下：
+
+<div align=center><img src="https://i.imgur.com/Gr6GnSz.png" width="400px" /> </div>
+<div align=center> Fig C-9 贝叶斯过滤器，考虑小车模型的概率分布以及传感器的概率分布</div>
+
+下图展示了一个机器人通过贝叶斯过滤器，综合考虑模型概率分布以及传感器概率分布，并分别使用三角分布以及正态分布的结果：
+
+<div align=center><img src="https://i.imgur.com/6t6FofV.png" width="500px" /> </div>
+<div align=center> Fig C-10 贝叶斯过滤器，左：三角分布，右：正态分布</div>
+
+下图展示了一些正态分布的基础知识：
+
+<div align=center><img src="https://i.imgur.com/tJD4vpY.png" width="400px" /> </div>
+<div align=center> Fig C-11 正态分布</div>
+
+正太分布的积分不是1，而是由 \\(\sigma\\) 决定的。

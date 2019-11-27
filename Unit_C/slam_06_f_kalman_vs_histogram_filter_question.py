@@ -11,24 +11,51 @@ def move(distribution, delta):
        delta."""
 
     # --->>> Copy your previous code here.
-
-    return distribution  # Replace this by your own result.
+    new_offset = distribution.offset + delta
+    new_values = distribution.values
+    new_distribution = Distribution(new_offset,new_values)
+    
+    return new_distribution  # Replace this by your own result.
 
 
 def convolve(a, b):
     """Convolve distribution a and b and return the resulting new distribution."""
 
     # --->>> Copy your previous code here.
+    # offset for next step
+    offset = a.offset + b.offset;
     
-    return a  # Replace this by your own result.
+    # init the distri_list
+    distri_list = []
+    
+    # calculate several distributions according to the number of a
+    for a_value in a.values:
+        distri_value = []
+        for b_value in b.values:
+            distri_value.append(a_value*b_value)
+        distri_list.append(Distribution(offset, distri_value))
+        offset += 1
+    
+    return Distribution.sum(distri_list)
 
 
 def multiply(a, b):
     """Multiply two distributions and return the resulting distribution."""
 
     # --->>> Copy your previous code here.
+    start = min([a.start(), b.start()])
+    stop = max([a.stop(), b.stop()])
     
-    return a  # Modify this to return your result.
+    values = []
+    
+    for i in range(start, stop):
+        values.append(a.value(i) * b.value(i))
+    
+    result_distri = Distribution(start, values)
+    
+    result_distri.normalize()
+    
+    return result_distri
 
 #
 # Helpers.
@@ -76,11 +103,18 @@ def kalman_filter_step(belief, control, measurement):
     # --->>> Put your code here.
     
     # Prediction.
-    prediction = Density(belief.mu + 10.0, belief.sigma2 + 100.0)  # Replace
+    #prediction = Density(belief.mu + 10.0, belief.sigma2 + 100.0)  # Replace
+    
+    prediction = Density(belief.mu + control.mu, belief.sigma2 + control.sigma2)
+
 
     # Correction.
-    correction = prediction  # Replace
-
+    #correction = prediction  # Replace
+    k = prediction.sigma2 / (prediction.sigma2 + measurement.sigma2)
+    mu = prediction.mu + k*(measurement.mu - prediction.mu)
+    sigma2 = (1.0 - k)*prediction.sigma2
+    correction = Density(mu, sigma2)
+    
     return (prediction, correction)
 
 #

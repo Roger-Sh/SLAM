@@ -9,9 +9,9 @@ def move(distribution, delta):
        delta."""
 
     # --->>> Insert your code here.
-    new_center = distribution.offset + delta
+    new_offset = distribution.offset + delta
     new_values = distribution.values
-    new_distribution = Distribution(new_center,new_values)
+    new_distribution = Distribution(new_offset,new_values)
     
     return new_distribution  # Replace this by your own result.
 

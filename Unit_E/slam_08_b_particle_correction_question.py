@@ -46,8 +46,20 @@ class ParticleFilter:
     def predict(self, control):
         """The prediction step of the particle filter."""
 
+        left, right = control
         # --->>> Insert code from previous question here.
-        pass  # Remove this.
+        sigma_l2 = (self.control_motion_factor*left)**2 + (self.control_turn_factor*(left-right))**2
+        sigma_r2 = (self.control_motion_factor*right)**2 + (self.control_turn_factor*(left-right))**2
+        
+        particles_predict = []
+        for particle in self.particles:
+            left_sample = random.gauss(left, sqrt(sigma_l2))
+            right_sample = random.gauss(right, sqrt(sigma_r2))
+            control_sample = [left_sample, right_sample]
+            particles_predict.append(self.g(particle, control_sample, self.robot_width))
+        
+        self.particles = particles_predict
+
 
     # Measurement. This is exactly the same method as in the Kalman filter.
     @staticmethod
@@ -74,7 +86,18 @@ class ParticleFilter:
         # Note that the two parameters sigma_d and sigma_alpha discussed
         # in the lecture are self.measurement_distance_stddev and
         # self.measurement_angle_stddev.
-        return 1.0  # Replace this.
+        
+        dist, alpha = measurement
+        dist_pre, alpha_pre = predicted_measurement
+        
+        dist_diff = dist - dist_pre
+        alpha_diff = (alpha - alpha_pre + pi) % (2*pi) - pi
+            
+        alpha_prob = normal_dist.pdf(alpha_diff, 0, self.measurement_angle_stddev)
+        dist_prob = normal_dist.pdf(dist_diff, 0, self.measurement_distance_stddev)
+            
+        return alpha_prob * dist_prob
+        
 
     def compute_weights(self, cylinders, landmarks):
         """Computes one weight for each particle, returns list of weights."""
@@ -88,7 +111,13 @@ class ParticleFilter:
             # --->>> Insert code to compute weight for particle p here.
             # This will require a loop over all (measurement, landmark)
             # in assignment. Append weight to the list of weights.
-            weights.append(1.0)  # Replace this.
+            weight = 1.0
+            for pair in assignment:
+                measurement, landmark = pair
+                predicted_measurement = self.h(p, landmark, self.scanner_displacement)
+                weight *= self.probability_of_measurement(measurement, predicted_measurement)
+            
+            weights.append(weight)  # Replace this.
         return weights
 
     def resample(self, weights):
@@ -98,7 +127,20 @@ class ParticleFilter:
         # --->>> Insert your code here.
         # You may implement the 'resampling wheel' algorithm
         # described in the lecture.
-        new_particles = self.particles  # Replace this.
+        
+        # Init 
+        new_particles = []
+        max_weight = max(weights) # max of weights
+        M = len(weights) # length of weights
+        offset = 0.0
+        index = random.randint(0,M-1)
+        for i in xrange(M):
+            offset += random.uniform(0, 2*max_weight)
+            while (offset > weights[index]):
+                offset -= weights[index]
+                index = (index+1) % M
+            new_particles.append(self.particles[index])
+            
         return new_particles
 
     def correct(self, cylinders, landmarks):

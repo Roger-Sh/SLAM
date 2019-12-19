@@ -51,6 +51,19 @@ class ParticleFilter:
         # In the end, assign the new list of particles to self.particles.
         # For sampling, use random.gauss(mu, sigma). (Note sigma in this call
         # is the standard deviation, not the variance.)
+        
+        sigma_l2 = (self.control_motion_factor*left)**2 + (self.control_turn_factor*(left-right))**2
+        sigma_r2 = (self.control_motion_factor*right)**2 + (self.control_turn_factor*(left-right))**2
+        
+        particles_predict = []
+        for particle in self.particles:
+            left_sample = random.gauss(left, sqrt(sigma_l2))
+            right_sample = random.gauss(right, sqrt(sigma_r2))
+            control_sample = [left_sample, right_sample]
+            particles_predict.append(self.g(particle, control_sample, self.robot_width))
+        
+        self.particles = particles_predict
+            
 
     def print_particles(self, file_desc):
         """Prints particles to given file_desc output."""

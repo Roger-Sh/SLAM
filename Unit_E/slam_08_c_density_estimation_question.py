@@ -49,7 +49,19 @@ class ParticleFilter:
         """The prediction step of the particle filter."""
 
         # --->>> Put the code of a previous solution here.
-        pass  # Remove.
+        left, right = control
+        # --->>> Insert code from previous question here.
+        sigma_l2 = (self.control_motion_factor*left)**2 + (self.control_turn_factor*(left-right))**2
+        sigma_r2 = (self.control_motion_factor*right)**2 + (self.control_turn_factor*(left-right))**2
+        
+        particles_predict = []
+        for particle in self.particles:
+            left_sample = random.gauss(left, sqrt(sigma_l2))
+            right_sample = random.gauss(right, sqrt(sigma_r2))
+            control_sample = [left_sample, right_sample]
+            particles_predict.append(self.g(particle, control_sample, self.robot_width))
+        
+        self.particles = particles_predict
 
     # Measurement. This is exactly the same method as in the Kalman filter.
     @staticmethod
@@ -67,20 +79,58 @@ class ParticleFilter:
            probability."""
 
         # --->>> Put the code of a previous solution here.
-        pass  # Remove.
+        dist, alpha = measurement
+        dist_pre, alpha_pre = predicted_measurement
+        
+        dist_diff = dist - dist_pre
+        alpha_diff = (alpha - alpha_pre + pi) % (2*pi) - pi
+            
+        alpha_prob = normal_dist.pdf(alpha_diff, 0, self.measurement_angle_stddev)
+        dist_prob = normal_dist.pdf(dist_diff, 0, self.measurement_distance_stddev)
+            
+        return alpha_prob * dist_prob
 
     def compute_weights(self, cylinders, landmarks):
         """Computes one weight for each particle, return list of weights."""
 
         # --->>> Put the code of a previous solution here.
-        pass  # Remove.
+        weights = []
+        for p in self.particles:
+            # Get list of tuples:
+            # [ ((range_0, bearing_0), (landmark_x, landmark_y)), ... ]
+            assignment = assign_cylinders(cylinders, p,
+                self.scanner_displacement, landmarks)
+
+            # --->>> Insert code to compute weight for particle p here.
+            # This will require a loop over all (measurement, landmark)
+            # in assignment. Append weight to the list of weights.
+            weight = 1.0
+            for pair in assignment:
+                measurement, landmark = pair
+                predicted_measurement = self.h(p, landmark, self.scanner_displacement)
+                weight *= self.probability_of_measurement(measurement, predicted_measurement)
+            
+            weights.append(weight)  # Replace this.
+        return weights
 
     def resample(self, weights):
         """Return a list of particles which have been resampled, proportional
            to the given weights."""
 
         # --->>> Put the code of a previous solution here.
-        pass  # Remove.
+        new_particles = []
+        max_weight = max(weights) # max of weights
+        M = len(weights) # length of weights
+        offset = 0.0
+        index = random.randint(0,M-1)
+        for i in xrange(M):
+            offset += random.uniform(0, 2*max_weight)
+            while (offset > weights[index]):
+                offset -= weights[index]
+                index = (index+1) % M
+            new_particles.append(self.particles[index])
+            
+        return new_particles
 
     def correct(self, cylinders, landmarks):
         """The correction step of the particle filter."""
@@ -103,7 +153,23 @@ class ParticleFilter:
 
         # --->>> This is the new code you'll have to implement.
         # Return a tuple: (mean_x, mean_y, mean_heading).
-        return (0.0, 0.0, 0.0)  # Replace this.
+        sum_x = 0.0
+        sum_y = 0.0
+        sum_vx = 0.0
+        sum_vy = 0.0 
+        M = len(self.particles)
+        
+        for p in self.particles:
+            sum_x += p[0]
+            sum_y += p[1]
+            sum_vx += cos(p[2])
+            sum_vy += sin(p[2])
+            
+        mean_x = sum_x/M
+        mean_y = sum_y/M
+        mean_heading = atan2(sum_vy, sum_vx)
+        
+        return (mean_x, mean_y, mean_heading) 
 
 
 if __name__ == '__main__':
@@ -124,7 +190,7 @@ if __name__ == '__main__':
     measurement_angle_stddev = 15.0 / 180.0 * pi  # Angle measurement error.
 
     # Generate initial particles. Each particle is (x, y, theta).
-    number_of_particles = 50
+    number_of_particles = 200
     measured_state = (1850.0, 1897.0, 213.0 / 180.0 * pi)
     standard_deviations = (100.0, 100.0, 10.0 / 180.0 * pi)
     initial_particles = []

@@ -105,6 +105,17 @@ class ExtendedKalmanFilterSLAM:
 
         # --->>> Put here your previous code to compute the new
         #        covariance and state.
+        n = 3 + 2 * self.number_of_landmarks
+        G = eye(n)
+        G[0:3,0:3] = G3
+        
+        R = zeros((n, n))
+        R[0:3,0:3] = R3
+        
+        self.covariance = dot(G, dot(self.covariance, G.T)) + R  # Replace this.
+        
+        # state' = g(state, control)
+        self.state[0:3] = self.g(self.state[0:3], control, self.robot_width)  # It's weird to add [0:3] in this line, but for online commit, it is neccessary.
 
     def add_landmark_to_state(self, initial_coords):
         """Enlarge the current state and covariance matrix to include one more
@@ -114,7 +125,23 @@ class ExtendedKalmanFilterSLAM:
         # --->>> Put here your previous code to augment the robot's state and
         #        covariance matrix.
 
-        return -1  # Replace this.
+        N = self.number_of_landmarks
+        self.number_of_landmarks = N+1
+        
+        state_old = self.state
+        covariance_old = self.covariance
+
+        # state        
+        state_new = append(state_old,initial_coords)
+        self.state = state_new
+
+        #covariance
+        covariance_new = zeros((3+2*(N+1),3+2*(N+1)))
+        covariance_new[0:3+2*N,0:3+2*N] = covariance_old
+        covariance_new[3+2*N:,3+2*N:] = diag([1e10,1e10])
+        self.covariance = covariance_new
+        
+        return N  # Replace this.
 
     @staticmethod
     def h(state, landmark, scanner_displacement):
@@ -152,8 +179,10 @@ class ExtendedKalmanFilterSLAM:
         H3 = self.dh_dstate(self.state, landmark, self.scanner_displacement)
 
         # --->>> Add your code here to set up the full H matrix.
-        H = H3  # Replace this.
-
+        H = zeros((2,3+2*self.number_of_landmarks))
+        H[0:2,0:3] = H3
+        H[0:2,3+2*landmark_index:3+2*landmark_index+2] = -1*H3[0:2,0:2]
+        
         # This is the old code from the EKF - no modification necessary!
         Q = diag([self.measurement_distance_stddev**2,
                   self.measurement_angle_stddev**2])

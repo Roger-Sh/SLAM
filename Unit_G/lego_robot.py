@@ -219,6 +219,11 @@ class LegoLogfile(object):
         return (i - 330.0) * 0.006135923151543 + mounting_angle
 
     @staticmethod
+    def min_max_bearing():
+        return (LegoLogfile.beam_index_to_angle(0),
+                LegoLogfile.beam_index_to_angle(660))
+
+    @staticmethod
     def scanner_to_world(pose, point):
         """Given a robot pose (rx, ry, heading) and a point (x, y) in the
            scanner's coordinate system, return the point's coordinates in the

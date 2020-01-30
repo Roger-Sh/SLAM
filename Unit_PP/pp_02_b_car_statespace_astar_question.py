@@ -161,11 +161,14 @@ def astar_statespace(start_pose, goal_pose, obstacles):
         # Compute discrete index.
         # CHANGE 02_b: compute a discrete pose index pose_idx from pose,
         #   using the function pose_index() above.
+        pose_idx = pose_index(pose)
 
         # Check if this has been visited already.
         # CHANGE 02_b: check if pose_index is in generated_states already,
         #   and if so, skip the rest of the loop. (This is the point where
         #   we prevent exponential growth.)
+        if pose_idx in generated_states:
+            continue
 
         # Mark visited_cell which encloses this pose.
         visited_cells[int(pose[0]), int(pose[1])] = cost
@@ -174,7 +177,7 @@ def astar_statespace(start_pose, goal_pose, obstacles):
         # came from and which move we used.
         # CHANGE 02_b: Change the following line so that the index is the
         #   discrete pose instead of the continuous pose.
-        generated_states[pose] = (previous_pose, move)
+        generated_states[pose_idx] = (previous_pose, move)
 
         # Check if we have (approximately) reached the goal.
         if states_close(pose, goal_pose):

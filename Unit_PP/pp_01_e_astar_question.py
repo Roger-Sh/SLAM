@@ -74,10 +74,10 @@ def astar(start, goal, obstacles):
     #   to the front.
     # CHANGE 01_e: add the total cost of the start node as FIRST ELEMENT to
     #   the tuple.
-    front = [ (0.001, start, None) ]
+    front = [ (0.001+distance(start, goal), 0.001, start, None) ]
 
     # In the beginning, no cell has been visited.
-    extents = obstacles.shape
+    extents = obstacles.shape # map size  # (200, 150)
     visited = np.zeros(extents, dtype=np.float32)
 
     # Also, we use a dictionary to remember where we came from.
@@ -86,14 +86,19 @@ def astar(start, goal, obstacles):
     # While there are elements to investigate in our front.
     while front:
         # Get smallest item and remove from front.
-
+        element_min = heappop(front)
+        
         # Check if this has been visited already.
         # CHANGE 01_e: use the following line as shown.
-        total_cost, cost, pos, previous = element
+        total_cost, cost, pos, previous = element_min
+        if visited[pos] > 0:
+            continue
 
         # Now it has been visited. Mark with cost.
+        visited[pos] = cost
 
         # Also remember that we came from previous when we marked pos.
+        came_from[pos] = previous 
 
         # Check if the goal has been reached.
         if pos == goal:
@@ -102,6 +107,10 @@ def astar(start, goal, obstacles):
         # Check all neighbors.
         for dx, dy, deltacost in movements:
             # Determine new position and check bounds.
+            new_x = pos[0] + dx;
+            new_y = pos[1] + dy;
+            if new_x < 0 or new_x >= extents[0] or new_y < 0 or new_y >= extents[1]:
+                continue
 
             # Add to front if: not visited before and no obstacle.
             new_pos = (new_x, new_y)
@@ -111,8 +120,18 @@ def astar(start, goal, obstacles):
             #   where new_cost is the cost from start to new_pos,
             #   and new_total_cost is new_cost plus the estimated cost
             #   from new_pos to goal.
+            if visited[new_pos] == 0 and obstacles[new_pos] != 255:
+                new_cost = cost+deltacost
+                new_total_cost = new_cost+distance(new_pos, goal)
+                heappush(front, (new_total_cost,new_cost, new_pos, pos))
 
     # Reconstruct path, starting from goal.
+    path = []
+    if pos == goal:  # If we reached the goal, unwind backwards.
+        while pos:
+            path.append(pos)
+            pos = came_from[pos]
+        path.reverse()  # Reverse so that path is from start to goal.
 
     return (path, visited)
 

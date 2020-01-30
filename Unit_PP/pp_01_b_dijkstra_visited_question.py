@@ -63,21 +63,26 @@ def dijkstra(start, goal, obstacles):
     # In the beginning, the start is the only element in our front.
     # The first element is the cost of the path from the start to the point.
     # The second element is the position (cell) of the point.
-    front = [ (0.0, start) ]  # CHANGE 01_b: set the cost to e.g. 0.001
+    front = [ (0.001, start) ]  # CHANGE 01_b: set the cost to e.g. 0.001 # [(0.0, (76, 72))]
 
     # In the beginning, no cell has been visited.
-    extents = obstacles.shape
+    extents = obstacles.shape # map size  # (200, 150)
     visited = np.zeros(extents, dtype=np.float32)
 
     # While there are elements to investigate in our front.
     while front:
         # Get smallest item and remove it from front.
+        element_min = min(front)
+        front.remove(element_min)
 
         # Check if this has been visited already.
-        cost, pos = element
+        cost, pos = element_min
+        if visited[pos] > 0:
+            continue
 
         # Now it is visited. Mark with cost.
         # CHANGE 01_b: set visited[pos] to cost instead of 1.
+        visited[pos] = cost
 
         # Check if the goal has been reached.
         if pos == goal:
@@ -86,9 +91,15 @@ def dijkstra(start, goal, obstacles):
         # Check all neighbors.
         for dx, dy, deltacost in movements:
             # Determine new position and check bounds.
+            new_x = pos[0] + dx;
+            new_y = pos[1] + dy;
+            if new_x < 0 or new_x >= extents[0] or new_y < 0 or new_y >= extents[1]:
+                continue
 
             # Add to front if: not visited before and no obstacle.
             new_pos = (new_x, new_y)
+            if visited[new_pos] == 0 and obstacles[new_pos] != 255:
+                front.append((cost + deltacost, new_pos))
 
     return ([], visited)
 

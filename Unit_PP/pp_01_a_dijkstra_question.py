@@ -53,13 +53,13 @@ def update_callback(pos = None):
 # --------------------------------------------------------------------------
 # Dijkstra algorithm.
 # --------------------------------------------------------------------------
-
+        
 # Allowed movements and costs on the grid.
 # Each tuple is: (movement_x, movement_y, cost).
 s2 = np.sqrt(2)
 movements = [ # Direct neighbors (4N).
               (1,0, 1.), (0,1, 1.), (-1,0, 1.), (0,-1, 1.),
-              # Diagonal neighbors.
+              # Diagonal neighbors (8N).
               # Comment this out to play with 4N only (faster).
               (1,1, s2), (-1,1, s2), (-1,-1, s2), (1,-1, s2),
             ]
@@ -69,10 +69,10 @@ def dijkstra(start, goal, obstacles):
     # In the beginning, the start is the only element in our front.
     # The first element is the cost of the path from the start to the point.
     # The second element is the position (cell) of the point.
-    front = [ (0.0, start) ]
+    front = [ (0.0, start) ] # [(0.0, (76, 72))]
 
     # In the beginning, no cell has been visited.
-    extents = obstacles.shape
+    extents = obstacles.shape # map size  # (200, 150)
     visited = np.zeros(extents, dtype=np.float32)
 
     # While there are elements to investigate in our front.
@@ -81,13 +81,18 @@ def dijkstra(start, goal, obstacles):
         # CHANGE 01_a:
         # - Get smallest element from 'front'. Hint: min() may be useful.
         # - Remove this element from 'front'. Hint: 'front' is a list.
+        element_min = min(front)
+        front.remove(element_min)
 
         # Check if this has been visited already.
-        cost, pos = element  # Change if you named 'element' differently.
+        cost, pos = element_min  # Change if you named 'element' differently.
         # CHANGE 01_a: Skip the rest of the loop body if visited[pos] is > 0.
+        if visited[pos] > 0:
+            continue
 
         # Now it is visited. Mark with 1.
         # CHANGE 01_a: Set visited[pos] to 1.
+        visited[pos] = 1
 
         # Check if the goal has been reached.
         if pos == goal:
@@ -100,12 +105,18 @@ def dijkstra(start, goal, obstacles):
             # - Compute new_x and new_y from old position 'pos' and dx, dy.
             # - Check that new_x is >= 0 and < extents[0], similarly for new_y.
             # - If not, skip the remaining part of this loop.
-
+            new_x = pos[0] + dx;
+            new_y = pos[1] + dy;
+            if new_x < 0 or new_x >= extents[0] or new_y < 0 or new_y >= extents[1]:
+                continue
+             
             # Add to front if: not visited before and no obstacle.
             new_pos = (new_x, new_y)
             # CHANGE 01_a:
             # If visited is 0 and obstacles is not 255 (both at new_pos), then:
             # append the tuple (cost + deltacost, new_pos) to the front.
+            if visited[new_pos] == 0 and obstacles[new_pos] != 255:
+                front.append((cost + deltacost, new_pos))
 
     return ([], visited)
 

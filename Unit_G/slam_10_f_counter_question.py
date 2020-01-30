@@ -366,7 +366,7 @@ if __name__ == '__main__':
     minimum_correspondence_likelihood = 0.001  # Min likelihood of correspondence.
 
     # Generate initial particles. Each particle is (x, y, theta).
-    number_of_particles = 25
+    number_of_particles = 50
     start_state = np.array([500.0, 0.0, 45.0 / 180.0 * pi])
     initial_particles = [copy.copy(Particle(start_state))
                          for _ in xrange(number_of_particles)]

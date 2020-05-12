@@ -1,6 +1,3 @@
-test 2
-
-test
 # SLAM - Simultaneous localization and mapping
 
 ## Introduction 

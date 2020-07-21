@@ -67,7 +67,7 @@ c点和p‘的坐标为：
 $$
 \begin{align}
 \vec{c} &= \vec{p} - (R+\frac{w}{2}) \cdot \begin{bmatrix} \sin{\theta} \\\\ -\cos{\theta}\end{bmatrix} \nonumber \\\\
-\vec{p'} &= \vec{c} + (R + \frac{w}{2}) \cdot \begin{bmatrix} \sin{\theta + \alpha} \\\\ -\cos{\theta + \alpha}\end{bmatrix}\nonumber 
+\vec{p'} &= \vec{c} + (R + \frac{w}{2}) \cdot \begin{bmatrix} \sin{(\theta + \alpha)} \\\\ -\cos{(\theta + \alpha)}\end{bmatrix}\nonumber 
 \end{align}
 \tag{1.2}
 $$
